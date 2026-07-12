@@ -1,0 +1,10 @@
+[package]
+name = "pulse-trader"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[[bin]]
+name = "pulse-trader"
+path = ".mist/src/main.rs"
