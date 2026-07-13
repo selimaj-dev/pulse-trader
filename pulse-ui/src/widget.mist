@@ -1,0 +1,18 @@
+pub module widget;
+
+use crate::units;
+
+class Widget
+{
+    units::Position x = units::Position::Char(0);
+    units::Position y = units::Position::Char(0);
+
+    units::Size width = units::Size::Full;
+    units::Size height = units::Size::Full;
+
+    pub constructor() {}
+
+    void render(&self) {}
+
+    void update(&mut self) {}
+}

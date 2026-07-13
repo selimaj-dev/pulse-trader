@@ -1,0 +1,18 @@
+pub module units;
+
+pub enum Position
+{
+    Char(u16);
+    ScreenUnits { u16 units; u16 div; };
+    Percent(u16);
+    Center;
+    End;
+}
+
+pub enum Size
+{
+    Char(u16);
+    ScreenUnits { u16 units; u16 div; };
+    Percent(u16);
+    Full;
+}
