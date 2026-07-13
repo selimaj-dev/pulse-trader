@@ -1,8 +1,9 @@
 pub module widget;
 
 use crate::units;
+use crate::render_scope;
 
-class Widget
+pub class Widget
 {
     units::Position x = units::Position::Char(0);
     units::Position y = units::Position::Char(0);
@@ -12,7 +13,9 @@ class Widget
 
     pub constructor() {}
 
-    void render(&self) {}
+    pub virtual void render(&self, render_scope::RenderStack mut& stack) {
+        let _ = stack;
+    }
 
-    void update(&mut self) {}
+    pub virtual void update(&self) {}
 }
