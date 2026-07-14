@@ -4,7 +4,7 @@ pub struct SpacedRows(pub Vec<(LayoutItem, Box<dyn Widget>)>);
 
 impl Widget for SpacedRows {
     fn render(&self, scope: &mut crate::render::RenderScope) {
-        let mut alloc = scope.rect.allocate(&crate::layout::LayoutItem::Rows {
+        let alloc = scope.rect.allocate(&crate::layout::LayoutItem::Rows {
             unit: Percent(100),
             items: self.0.iter().map(|v| v.0.clone()).collect(),
         });
@@ -13,8 +13,9 @@ impl Widget for SpacedRows {
             let item = &self.0[i];
 
             if i > 0 {
-                let rect = &mut alloc.widgets[i];
-                scope.draw_text((0, rect.y - 1), "─".repeat(rect.width as usize));
+                let rect = &alloc.widgets[i];
+
+                scope.draw_text((0, rect.y - 2), "─".repeat(rect.width as usize));
             }
 
             alloc.draw(i, &*item.1);

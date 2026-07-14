@@ -31,7 +31,7 @@ impl App for PulseTradeApp {
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
-        // layout.draw_frame(0, Outline);
+        layout.draw_frame(0, Outline);
 
         layout.draw(
             0,
