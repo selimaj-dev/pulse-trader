@@ -1,6 +1,10 @@
-use std::fmt::Display;
+use std::{fmt::Display, io::stdout};
 
-use crate::unit::{Point, Rect};
+use crate::{
+    layout::Allocation,
+    unit::{Point, Rect},
+    widget::Widget,
+};
 
 pub enum Instr {
     DrawText(Point, String),
@@ -54,4 +58,36 @@ impl From<Rect> for Point {
             y: value.y,
         }
     }
+}
+
+impl Allocation {
+    pub fn draw<W: Widget>(&self, index: usize, widget: W) {
+        let mut scope = RenderScope::new(self.widget_alloc[index]);
+        widget.render(&mut scope);
+        scope.draw();
+    }
+}
+
+impl RenderScope {
+    pub fn draw(self) {
+        for inst in self.draw_instructions {
+            match inst {
+                Instr::DrawText(point, text) => {
+                    for (i, line) in text.lines().enumerate() {
+                        print_at(
+                            self.rect.x + point.x,
+                            self.rect.y + point.y + i as u16,
+                            line,
+                        );
+                    }
+                }
+                Instr::DrawOutline(rect) => {}
+            }
+        }
+    }
+}
+
+pub fn print_at(x: u16, y: u16, text: &str) {
+    crossterm::execute!(stdout(), crossterm::cursor::MoveTo(x, y)).unwrap();
+    println!("{text}");
 }

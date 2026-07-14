@@ -16,14 +16,13 @@ impl App for PulseTradeApp {
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
         layout(vec![
-            LayoutItem::Widget(Size::Flex(16)),
-            LayoutItem::Widget(Size::Flex(9)),
+            LayoutItem::Widget(Size::Flex(1)),
+            LayoutItem::Widget(Size::Flex(1)),
         ])
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
-        println!("{:?}", layout);
-        println!("{:?}", *self.count.lock().await);
+        layout.draw(1, "Yo");
     }
 }
 
