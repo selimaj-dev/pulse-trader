@@ -4,6 +4,7 @@ use crate::unit::{Rect, Size};
 pub enum LayoutItem {
     Rows { unit: Size, items: Vec<LayoutItem> },
     Columns { unit: Size, items: Vec<LayoutItem> },
+    Frame { padding: u16, item: Box<LayoutItem> },
     Widget(Size),
 }
 
@@ -63,6 +64,20 @@ impl LayoutItem {
                 }
             }
 
+            Self::Frame { padding, item } => {
+                frame.push(*alloc);
+
+                let mut item_alloc = alloc.clone();
+
+                item_alloc.width -= padding * 2;
+                item_alloc.height -= padding * 2;
+
+                item_alloc.x += padding;
+                item_alloc.y += padding;
+
+                item.allocate(&item_alloc, frame, widgets);
+            }
+
             Self::Widget(_) => {
                 widgets.push(*alloc);
             }
@@ -74,6 +89,7 @@ impl LayoutItem {
             Self::Rows { unit, .. } => unit,
             Self::Columns { unit, .. } => unit,
             Self::Widget(unit) => unit,
+            Self::Frame { item, .. } => item.get_size(),
         }
     }
 }

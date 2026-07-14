@@ -1,7 +1,11 @@
 use std::any::Any;
 
 use pulse_ui::{
-    App, layout::{LayoutItem, layout}, state::State, unit::Size, widget::outline::Outline,
+    App,
+    layout::{LayoutItem, layout},
+    state::State,
+    unit::Size,
+    widget::outline::Outline,
 };
 
 pub struct PulseTradeApp {
@@ -17,14 +21,21 @@ impl App for PulseTradeApp {
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
         layout(vec![
-            LayoutItem::Widget(Size::Flex(1)),
-            LayoutItem::Widget(Size::Flex(1)),
+            LayoutItem::Frame {
+                padding: 1,
+                item: Box::new(LayoutItem::Widget(Size::Flex(1))),
+            },
+            LayoutItem::Frame {
+                padding: 1,
+                item: Box::new(LayoutItem::Widget(Size::Flex(1))),
+            },
         ])
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
         layout.draw(1, "Yo");
-        layout.draw_frame(0, Outline);
+        layout.draw_frame(1, Outline);
+        layout.draw_frame(2, Outline);
     }
 }
 

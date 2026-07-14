@@ -13,7 +13,7 @@ impl Widget for Outline {
         );
 
         scope.draw_text(
-            (0, scope.rect.height),
+            (0, scope.rect.height - 1),
             "-".repeat(scope.rect.width as usize),
         );
     }
