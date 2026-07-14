@@ -1,31 +1,24 @@
 use pulse_ui::layout::{LayoutItem, Rect, Size};
 
 fn main() {
-    let layout = LayoutItem::Row {
-        width: Size::Percent(100),
-        height: Size::Percent(100),
+    let layout = LayoutItem::Columns {
+        unit: Size::Percent(100),
         items: vec![
-            LayoutItem::Widget {
-                width: Size::Percent(100),
-                height: Size::Flex(1),
-            },
-            LayoutItem::Widget {
-                width: Size::Percent(100),
-                height: Size::Flex(1),
-            },
+            LayoutItem::Widget(Size::Flex(16)),
+            LayoutItem::Widget(Size::Flex(9)),
         ],
     };
 
     let screen = Rect {
         x: 0,
         y: 0,
-        width: 60,
-        height: 12,
+        width: 3000,
+        height: 3000,
     };
 
-    let mut alloc = Vec::new();
+    let mut layout_alloc = Vec::new();
 
-    layout.allocate(&screen, &mut alloc);
+    layout.allocate(&screen, &mut layout_alloc);
 
-    println!("{:?}", alloc);
+    println!("{:?}", layout_alloc);
 }
