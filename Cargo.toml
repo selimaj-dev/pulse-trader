@@ -5,9 +5,12 @@ edition = "2024"
 
 [dependencies]
 pulse-ui = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 
 [workspace]
 members = ["pulse-ui"]
 
 [workspace.dependencies]
 pulse-ui = { path = "pulse-ui", version = "0.1.0-alpha.0" }
+tokio = "1.52.3"
+crossterm = "0.29.0"
