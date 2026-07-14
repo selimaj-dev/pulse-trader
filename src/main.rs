@@ -1,4 +1,7 @@
-use pulse_ui::layout::{LayoutItem, Rect, Size, layout};
+use pulse_ui::{
+    layout::{LayoutItem, layout},
+    unit::{Rect, Size},
+};
 
 fn main() {
     let layout = layout(vec![

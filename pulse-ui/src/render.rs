@@ -41,6 +41,12 @@ impl From<(u16, u16)> for Point {
     }
 }
 
+impl From<u16> for Point {
+    fn from(value: u16) -> Self {
+        Self { x: value, y: value }
+    }
+}
+
 impl From<Rect> for Point {
     fn from(value: Rect) -> Self {
         Self {
