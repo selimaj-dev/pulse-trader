@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use pulse_ui::{
     App,
     layout::{LayoutItem, layout},
@@ -10,9 +12,11 @@ pub struct PulseTradeApp {
 }
 
 impl App for PulseTradeApp {
-    async fn init(&mut self, ctx: pulse_ui::state::Context) {}
+    async fn init(&mut self, ctx: &pulse_ui::state::Context) {}
 
-    async fn update(&mut self, event: Box<dyn std::any::Any>) {}
+    async fn update(&mut self, ctx: &pulse_ui::state::Context, event: Box<dyn Any + Send + Sync>) {
+        ctx.close().await
+    }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
         layout(vec![
