@@ -59,7 +59,9 @@ impl<'a, T> std::ops::DerefMut for StateGuard<'a, T> {
 impl<'a, T> Drop for StateGuard<'a, T> {
     fn drop(&mut self) {
         if self.is_mutated {
-            self.tx.blocking_send(Box::new(Refresh)).unwrap()
+            let tx = self.tx.clone();
+
+            tokio::spawn(async move { tx.send(Box::new(Refresh)).await.unwrap() });
         }
     }
 }

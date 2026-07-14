@@ -1,9 +1,9 @@
 use std::any::Any;
 
 use pulse_ui::{
-    App,
+    App, get_screen,
     layout::{LayoutItem, layout},
-    state::State,
+    state::{Refresh, State},
     unit::Size,
     widget::outline::Outline,
 };
@@ -16,7 +16,11 @@ impl App for PulseTradeApp {
     async fn init(&mut self, ctx: &pulse_ui::state::Context) {}
 
     async fn update(&mut self, ctx: &pulse_ui::state::Context, event: Box<dyn Any + Send + Sync>) {
-        ctx.close().await
+        if let Some(Refresh) = event.downcast_ref() {
+            return;
+        }
+
+        *self.count.lock().await += 1;
     }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
@@ -33,7 +37,7 @@ impl App for PulseTradeApp {
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
-        layout.draw(1, "Yo");
+        layout.draw(1, format!("{:?}", *self.count.lock().await).as_str());
         layout.draw_frame(1, Outline);
         layout.draw_frame(2, Outline);
     }

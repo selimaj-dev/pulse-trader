@@ -38,9 +38,11 @@ pub async fn run<A: App>(create_app: impl FnOnce(&state::Context) -> A) {
     crossterm::terminal::enable_raw_mode().unwrap();
 
     tokio::spawn(async move {
-        tx.send(Box::new(crossterm::event::read().unwrap()))
-            .await
-            .unwrap();
+        loop {
+            tx.send(Box::new(crossterm::event::read().unwrap()))
+                .await
+                .unwrap();
+        }
     });
 
     let mut app = create_app(&ctx);
