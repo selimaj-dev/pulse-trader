@@ -3,25 +3,26 @@ use std::{any::Any, sync::Arc};
 use tokio::sync::{Mutex, MutexGuard, mpsc::Sender};
 
 pub struct Refresh;
+pub struct Close;
 
 #[derive(Debug, Clone)]
 pub struct Context {
-    pub(crate) tx: Sender<Box<dyn Any>>,
+    pub(crate) tx: Sender<Box<dyn Any + Send + Sync>>,
 }
 
 pub struct State<T> {
     pub value: Arc<Mutex<T>>,
-    tx: Sender<Box<dyn Any>>,
+    tx: Sender<Box<dyn Any + Send + Sync>>,
 }
 
 pub struct StateGuard<'a, T> {
     is_mutated: bool,
     value: MutexGuard<'a, T>,
-    tx: &'a Sender<Box<dyn Any>>,
+    tx: &'a Sender<Box<dyn Any + Send + Sync>>,
 }
 
 impl Context {
-    pub fn use_state<T>(&self, v: T) -> State<T> {
+    pub fn use_state<T: Send + Sync>(&self, v: T) -> State<T> {
         State {
             value: Arc::new(Mutex::new(v)),
             tx: self.tx.clone(),
@@ -36,6 +37,12 @@ impl<T> State<T> {
             is_mutated: false,
             tx: &self.tx,
         }
+    }
+}
+
+impl<T: std::fmt::Display> State<T> {
+    pub async fn display(&self) -> String {
+        self.lock().await.to_string()
     }
 }
 
@@ -58,7 +65,15 @@ impl<'a, T> std::ops::DerefMut for StateGuard<'a, T> {
 impl<'a, T> Drop for StateGuard<'a, T> {
     fn drop(&mut self) {
         if self.is_mutated {
-            self.tx.blocking_send(Box::new(Refresh)).unwrap()
+            let tx = self.tx.clone();
+
+            tokio::spawn(async move { tx.send(Box::new(Refresh)).await.unwrap() });
         }
+    }
+}
+
+impl Context {
+    pub async fn close(&self) {
+        self.tx.send(Box::new(Close)).await.unwrap()
     }
 }

@@ -4,20 +4,22 @@ use crate::unit::{Rect, Size};
 pub enum LayoutItem {
     Rows { unit: Size, items: Vec<LayoutItem> },
     Columns { unit: Size, items: Vec<LayoutItem> },
+
+    Frame { padding: u16, item: Box<LayoutItem> },
     Widget(Size),
 }
 
 #[derive(Debug, Clone)]
 pub struct Allocation {
-    pub widget_alloc: Vec<Rect>,
-    pub frame_alloc: Vec<Rect>,
+    pub widgets: Vec<Rect>,
+    pub frame: Vec<Rect>,
 }
 
 impl LayoutItem {
-    pub fn allocate(&self, alloc: &Rect, frame: &mut Vec<Rect>, widgets: &mut Vec<Rect>) {
+    pub fn allocate(&self, alloc: &Rect, full_alloc: &mut Allocation) {
         match self {
             Self::Rows { items, .. } | Self::Columns { items, .. } => {
-                frame.push(*alloc);
+                full_alloc.frame.push(*alloc);
 
                 let is_row = matches!(self, Self::Rows { .. });
 
@@ -59,12 +61,26 @@ impl LayoutItem {
 
                     curr += unit_alloc;
 
-                    item.allocate(&item_alloc, frame, widgets);
+                    item.allocate(&item_alloc, full_alloc);
                 }
             }
 
+            Self::Frame { padding, item } => {
+                full_alloc.frame.push(*alloc);
+
+                let mut item_alloc = alloc.clone();
+
+                item_alloc.width -= padding * 2;
+                item_alloc.height -= padding * 2;
+
+                item_alloc.x += padding;
+                item_alloc.y += padding;
+
+                item.allocate(&item_alloc, full_alloc);
+            }
+
             Self::Widget(_) => {
-                widgets.push(*alloc);
+                full_alloc.widgets.push(*alloc);
             }
         }
     }
@@ -74,26 +90,26 @@ impl LayoutItem {
             Self::Rows { unit, .. } => unit,
             Self::Columns { unit, .. } => unit,
             Self::Widget(unit) => unit,
+            Self::Frame { item, .. } => item.get_size(),
         }
     }
 }
 
 impl Rect {
     pub fn allocate(&self, layout: &LayoutItem) -> Allocation {
-        let mut widget_alloc = Vec::new();
-        let mut frame_alloc = Vec::new();
+        let mut alloc = Allocation {
+            widgets: Vec::new(),
+            frame: Vec::new(),
+        };
 
-        layout.allocate(self, &mut frame_alloc, &mut widget_alloc);
+        layout.allocate(self, &mut alloc);
 
-        Allocation {
-            widget_alloc,
-            frame_alloc,
-        }
+        alloc
     }
 }
 
 pub fn layout(rows: Vec<LayoutItem>) -> LayoutItem {
-    LayoutItem::Rows {
+    LayoutItem::Columns {
         unit: Size::Percent(100),
         items: rows,
     }

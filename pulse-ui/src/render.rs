@@ -8,7 +8,6 @@ use crate::{
 
 pub enum Instr {
     DrawText(Point, String),
-    DrawOutline(Rect),
 }
 
 pub struct RenderScope {
@@ -20,10 +19,6 @@ impl RenderScope {
     pub fn draw_text<P: Into<Point>, T: Display>(&mut self, at: P, text: T) {
         self.draw_instructions
             .push(Instr::DrawText(at.into(), text.to_string()));
-    }
-
-    pub fn draw_outline<P: Into<Point>>(&mut self, rect: Rect) {
-        self.draw_instructions.push(Instr::DrawOutline(rect));
     }
 }
 
@@ -62,7 +57,13 @@ impl From<Rect> for Point {
 
 impl Allocation {
     pub fn draw<W: Widget>(&self, index: usize, widget: W) {
-        let mut scope = RenderScope::new(self.widget_alloc[index]);
+        let mut scope = RenderScope::new(self.widgets[index]);
+        widget.render(&mut scope);
+        scope.draw();
+    }
+
+    pub fn draw_frame<W: Widget>(&self, index: usize, widget: W) {
+        let mut scope = RenderScope::new(self.frame[index]);
         widget.render(&mut scope);
         scope.draw();
     }
@@ -81,7 +82,6 @@ impl RenderScope {
                         );
                     }
                 }
-                Instr::DrawOutline(rect) => {}
             }
         }
     }
@@ -89,5 +89,5 @@ impl RenderScope {
 
 pub fn print_at(x: u16, y: u16, text: &str) {
     crossterm::execute!(stdout(), crossterm::cursor::MoveTo(x, y)).unwrap();
-    println!("{text}");
+    print!("{text}");
 }
