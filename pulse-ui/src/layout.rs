@@ -3,22 +3,29 @@ use crate::unit::{Rect, Size};
 #[derive(Debug, Clone)]
 pub enum LayoutItem {
     Rows { unit: Size, items: Vec<LayoutItem> },
+    SpacedRows { unit: Size, items: Vec<LayoutItem> },
+
     Columns { unit: Size, items: Vec<LayoutItem> },
+    SpacedColumns { unit: Size, items: Vec<LayoutItem> },
+
     Frame { padding: u16, item: Box<LayoutItem> },
     Widget(Size),
 }
 
 #[derive(Debug, Clone)]
 pub struct Allocation {
-    pub widget_alloc: Vec<Rect>,
-    pub frame_alloc: Vec<Rect>,
+    pub widgets: Vec<Rect>,
+    pub frame: Vec<Rect>,
 }
 
 impl LayoutItem {
-    pub fn allocate(&self, alloc: &Rect, frame: &mut Vec<Rect>, widgets: &mut Vec<Rect>) {
+    pub fn allocate(&self, alloc: &Rect, full_alloc: &mut Allocation) {
         match self {
-            Self::Rows { items, .. } | Self::Columns { items, .. } => {
-                frame.push(*alloc);
+            Self::Rows { items, .. }
+            | Self::Columns { items, .. }
+            | Self::SpacedRows { items, .. }
+            | Self::SpacedColumns { items, .. } => {
+                full_alloc.frame.push(*alloc);
 
                 let is_row = matches!(self, Self::Rows { .. });
 
@@ -60,12 +67,12 @@ impl LayoutItem {
 
                     curr += unit_alloc;
 
-                    item.allocate(&item_alloc, frame, widgets);
+                    item.allocate(&item_alloc, full_alloc);
                 }
             }
 
             Self::Frame { padding, item } => {
-                frame.push(*alloc);
+                full_alloc.frame.push(*alloc);
 
                 let mut item_alloc = alloc.clone();
 
@@ -75,19 +82,19 @@ impl LayoutItem {
                 item_alloc.x += padding;
                 item_alloc.y += padding;
 
-                item.allocate(&item_alloc, frame, widgets);
+                item.allocate(&item_alloc, full_alloc);
             }
 
             Self::Widget(_) => {
-                widgets.push(*alloc);
+                full_alloc.widgets.push(*alloc);
             }
         }
     }
 
     pub fn get_size<'a>(&'a self) -> &'a Size {
         match self {
-            Self::Rows { unit, .. } => unit,
-            Self::Columns { unit, .. } => unit,
+            Self::Rows { unit, .. } | Self::SpacedRows { unit, .. } => unit,
+            Self::Columns { unit, .. } | Self::SpacedColumns { unit, .. } => unit,
             Self::Widget(unit) => unit,
             Self::Frame { item, .. } => item.get_size(),
         }
@@ -96,15 +103,14 @@ impl LayoutItem {
 
 impl Rect {
     pub fn allocate(&self, layout: &LayoutItem) -> Allocation {
-        let mut widget_alloc = Vec::new();
-        let mut frame_alloc = Vec::new();
+        let mut alloc = Allocation {
+            widgets: Vec::new(),
+            frame: Vec::new(),
+        };
 
-        layout.allocate(self, &mut frame_alloc, &mut widget_alloc);
+        layout.allocate(self, &mut alloc);
 
-        Allocation {
-            widget_alloc,
-            frame_alloc,
-        }
+        alloc
     }
 }
 

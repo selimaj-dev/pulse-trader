@@ -57,13 +57,13 @@ impl From<Rect> for Point {
 
 impl Allocation {
     pub fn draw<W: Widget>(&self, index: usize, widget: W) {
-        let mut scope = RenderScope::new(self.widget_alloc[index]);
+        let mut scope = RenderScope::new(self.widgets[index]);
         widget.render(&mut scope);
         scope.draw();
     }
 
     pub fn draw_frame<W: Widget>(&self, index: usize, widget: W) {
-        let mut scope = RenderScope::new(self.frame_alloc[index]);
+        let mut scope = RenderScope::new(self.frame[index]);
         widget.render(&mut scope);
         scope.draw();
     }
