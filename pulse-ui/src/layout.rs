@@ -43,23 +43,25 @@ impl LayoutItem {
                 for item in items {
                     let size = item.get_size();
 
+                    let unit_alloc = size.get(allocation, remaining, total_weight);
+
                     let item_alloc = if is_row {
                         Rect {
                             width: alloc.width,
-                            height: size.get(allocation, remaining, total_weight),
+                            height: unit_alloc,
                             x: alloc.x,
                             y: curr,
                         }
                     } else {
                         Rect {
-                            width: size.get(allocation, remaining, total_weight),
+                            width: unit_alloc,
                             height: alloc.height,
                             x: curr,
                             y: alloc.y,
                         }
                     };
 
-                    curr += item_alloc.height;
+                    curr += unit_alloc;
 
                     item.allocate(&item_alloc, layout);
 
