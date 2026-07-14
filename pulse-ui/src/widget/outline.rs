@@ -8,7 +8,7 @@ impl Widget for Outline {
 
         scope.draw_text((0, 1), "|\n".repeat(scope.rect.height as usize - 2));
         scope.draw_text(
-            (scope.rect.width, 1),
+            (scope.rect.width - 1, 1),
             "|\n".repeat(scope.rect.height as usize - 2),
         );
 

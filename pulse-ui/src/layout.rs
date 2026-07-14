@@ -109,7 +109,7 @@ impl Rect {
 }
 
 pub fn layout(rows: Vec<LayoutItem>) -> LayoutItem {
-    LayoutItem::Rows {
+    LayoutItem::Columns {
         unit: Size::Percent(100),
         items: rows,
     }
