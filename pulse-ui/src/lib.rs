@@ -25,6 +25,8 @@ pub trait App {
 
         self.render(get_screen().allocate(&self.layout().await))
             .await;
+
+        crossterm::execute!(std::io::stdout()).unwrap();
     }
 }
 

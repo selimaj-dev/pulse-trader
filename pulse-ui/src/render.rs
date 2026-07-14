@@ -66,6 +66,12 @@ impl Allocation {
         widget.render(&mut scope);
         scope.draw();
     }
+
+    pub fn draw_frame<W: Widget>(&self, index: usize, widget: W) {
+        let mut scope = RenderScope::new(self.frame_alloc[index]);
+        widget.render(&mut scope);
+        scope.draw();
+    }
 }
 
 impl RenderScope {
@@ -89,5 +95,5 @@ impl RenderScope {
 
 pub fn print_at(x: u16, y: u16, text: &str) {
     crossterm::execute!(stdout(), crossterm::cursor::MoveTo(x, y)).unwrap();
-    println!("{text}");
+    print!("{text}");
 }

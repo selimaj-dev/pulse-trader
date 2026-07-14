@@ -1,10 +1,7 @@
 use std::any::Any;
 
 use pulse_ui::{
-    App,
-    layout::{LayoutItem, layout},
-    state::State,
-    unit::Size,
+    App, layout::{LayoutItem, layout}, state::State, unit::Size, widget::outline::Outline,
 };
 
 pub struct PulseTradeApp {
@@ -27,6 +24,7 @@ impl App for PulseTradeApp {
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
         layout.draw(1, "Yo");
+        layout.draw_frame(0, Outline);
     }
 }
 
