@@ -1,4 +1,5 @@
 pub mod outline;
+pub mod spaced;
 
 use crate::render::RenderScope;
 
@@ -30,3 +31,9 @@ display_widget!(u64);
 display_widget!(u128);
 display_widget!(f32);
 display_widget!(f64);
+
+impl Widget for &dyn Widget {
+    fn render(&self, scope: &mut RenderScope) {
+        (*self).render(scope);
+    }
+}

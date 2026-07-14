@@ -5,7 +5,7 @@ use pulse_ui::{
     layout::{LayoutItem, layout},
     state::{Refresh, State},
     unit::Size,
-    widget::outline::Outline,
+    widget::spaced::SpacedRows,
 };
 
 pub struct PulseTradeApp {
@@ -24,22 +24,18 @@ impl App for PulseTradeApp {
     }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
-        layout(vec![
-            LayoutItem::Frame {
-                padding: 1,
-                item: Box::new(LayoutItem::Widget(Size::Flex(1))),
-            },
-            LayoutItem::Frame {
-                padding: 1,
-                item: Box::new(LayoutItem::Widget(Size::Flex(1))),
-            },
-        ])
+        layout(vec![LayoutItem::Widget(Size::Flex(1))])
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
-        layout.draw(1, format!("{}", self.count.display().await).as_str());
-        layout.draw_frame(1, Outline);
-        layout.draw_frame(2, Outline);
+        layout.draw(
+            0,
+            SpacedRows(vec![
+                (LayoutItem::Widget(Size::Flex(1)), Box::new("one")),
+                (LayoutItem::Widget(Size::Flex(1)), Box::new("two")),
+                (LayoutItem::Widget(Size::Flex(1)), Box::new("three")),
+            ]),
+        );
     }
 }
 

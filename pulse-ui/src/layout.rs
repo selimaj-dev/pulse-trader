@@ -3,10 +3,7 @@ use crate::unit::{Rect, Size};
 #[derive(Debug, Clone)]
 pub enum LayoutItem {
     Rows { unit: Size, items: Vec<LayoutItem> },
-    SpacedRows { unit: Size, items: Vec<LayoutItem> },
-
     Columns { unit: Size, items: Vec<LayoutItem> },
-    SpacedColumns { unit: Size, items: Vec<LayoutItem> },
 
     Frame { padding: u16, item: Box<LayoutItem> },
     Widget(Size),
@@ -21,10 +18,7 @@ pub struct Allocation {
 impl LayoutItem {
     pub fn allocate(&self, alloc: &Rect, full_alloc: &mut Allocation) {
         match self {
-            Self::Rows { items, .. }
-            | Self::Columns { items, .. }
-            | Self::SpacedRows { items, .. }
-            | Self::SpacedColumns { items, .. } => {
+            Self::Rows { items, .. } | Self::Columns { items, .. } => {
                 full_alloc.frame.push(*alloc);
 
                 let is_row = matches!(self, Self::Rows { .. });
@@ -93,8 +87,8 @@ impl LayoutItem {
 
     pub fn get_size<'a>(&'a self) -> &'a Size {
         match self {
-            Self::Rows { unit, .. } | Self::SpacedRows { unit, .. } => unit,
-            Self::Columns { unit, .. } | Self::SpacedColumns { unit, .. } => unit,
+            Self::Rows { unit, .. } => unit,
+            Self::Columns { unit, .. } => unit,
             Self::Widget(unit) => unit,
             Self::Frame { item, .. } => item.get_size(),
         }
