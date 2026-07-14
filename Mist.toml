@@ -1,3 +1,0 @@
-package = "main.mist"
-packages = []
-include = ["pulse-ui"]

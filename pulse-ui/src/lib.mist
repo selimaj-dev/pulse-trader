@@ -1,3 +1,0 @@
-pub void test() {
-    println!("Hello, World");
-}
