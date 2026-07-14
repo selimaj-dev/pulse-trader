@@ -86,7 +86,7 @@ impl Size {
     pub fn get_fixed(&self, alloc: u16) -> u16 {
         match self {
             Self::Fixed(v) => *v,
-            Self::Percent(v) => alloc / (v / 100),
+            Self::Percent(v) => alloc * (*v) / 100,
             Self::Flex(_) => 0,
         }
     }
@@ -101,8 +101,14 @@ impl Size {
     pub fn get(&self, alloc: u16, remaining: u16, total_weight: u16) -> u16 {
         match self {
             Self::Fixed(v) => *v,
-            Self::Percent(v) => alloc / (v / 100),
-            Self::Flex(v) => remaining * v / total_weight,
+            Self::Percent(v) => alloc * (*v) / 100,
+            Self::Flex(v) => {
+                if total_weight == 0 {
+                    0
+                } else {
+                    remaining * v / total_weight
+                }
+            }
         }
     }
 }
