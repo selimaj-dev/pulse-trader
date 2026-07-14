@@ -1,10 +1,9 @@
 [package]
 name = "pulse-ui"
-version = "0.1.0-alpha.0"
+version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+tokio = { workspace = true, features = ["sync"] }
+crossterm = { workspace = true }
 
-[lib]
-name = "pulse_ui"
-path = ".mist/src/lib.rs"

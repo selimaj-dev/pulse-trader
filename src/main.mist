@@ -1,5 +1,0 @@
-void main() {
-    println!("Hello, World!");
-
-    pulse_ui::test();
-}
