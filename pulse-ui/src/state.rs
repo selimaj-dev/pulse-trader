@@ -40,6 +40,12 @@ impl<T> State<T> {
     }
 }
 
+impl<T: std::fmt::Display> State<T> {
+    pub async fn display(&self) -> String {
+        self.lock().await.to_string()
+    }
+}
+
 impl<'a, T> std::ops::Deref for StateGuard<'a, T> {
     type Target = T;
 

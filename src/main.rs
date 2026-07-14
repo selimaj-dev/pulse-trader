@@ -1,7 +1,7 @@
 use std::any::Any;
 
 use pulse_ui::{
-    App, get_screen,
+    App,
     layout::{LayoutItem, layout},
     state::{Refresh, State},
     unit::Size,
@@ -37,7 +37,7 @@ impl App for PulseTradeApp {
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
-        layout.draw(1, format!("{:?}", *self.count.lock().await).as_str());
+        layout.draw(1, format!("{}", self.count.display().await).as_str());
         layout.draw_frame(1, Outline);
         layout.draw_frame(2, Outline);
     }

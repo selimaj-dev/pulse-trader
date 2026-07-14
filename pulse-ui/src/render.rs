@@ -8,7 +8,6 @@ use crate::{
 
 pub enum Instr {
     DrawText(Point, String),
-    DrawOutline(Rect),
 }
 
 pub struct RenderScope {
@@ -20,10 +19,6 @@ impl RenderScope {
     pub fn draw_text<P: Into<Point>, T: Display>(&mut self, at: P, text: T) {
         self.draw_instructions
             .push(Instr::DrawText(at.into(), text.to_string()));
-    }
-
-    pub fn draw_outline<P: Into<Point>>(&mut self, rect: Rect) {
-        self.draw_instructions.push(Instr::DrawOutline(rect));
     }
 }
 
@@ -87,7 +82,6 @@ impl RenderScope {
                         );
                     }
                 }
-                Instr::DrawOutline(rect) => {}
             }
         }
     }
