@@ -13,16 +13,25 @@ pub struct Rect {
     pub height: u16,
 }
 
+#[derive(Debug, Clone)]
 pub enum LayoutItem {
     Rows { unit: Size, items: Vec<LayoutItem> },
     Columns { unit: Size, items: Vec<LayoutItem> },
     Widget(Size),
 }
 
+#[derive(Debug, Clone)]
+pub struct Allocation {
+    pub widget_alloc: Vec<Rect>,
+    pub frame_alloc: Vec<Rect>,
+}
+
 impl LayoutItem {
-    pub fn allocate(&self, alloc: &Rect, layout: &mut Vec<Rect>) {
+    pub fn allocate(&self, alloc: &Rect, frame: &mut Vec<Rect>, widgets: &mut Vec<Rect>) {
         match self {
             Self::Rows { items, .. } | Self::Columns { items, .. } => {
+                frame.push(*alloc);
+
                 let is_row = matches!(self, Self::Rows { .. });
 
                 let allocation = if is_row { alloc.height } else { alloc.width };
@@ -63,13 +72,13 @@ impl LayoutItem {
 
                     curr += unit_alloc;
 
-                    item.allocate(&item_alloc, layout);
-
-                    layout.push(item_alloc);
+                    item.allocate(&item_alloc, frame, widgets);
                 }
             }
 
-            Self::Widget(_) => {}
+            Self::Widget(_) => {
+                widgets.push(*alloc);
+            }
         }
     }
 
@@ -109,6 +118,20 @@ impl Size {
                     remaining * v / total_weight
                 }
             }
+        }
+    }
+}
+
+impl Rect {
+    pub fn allocate(&self, layout: &LayoutItem) -> Allocation {
+        let mut widget_alloc = Vec::new();
+        let mut frame_alloc = Vec::new();
+
+        layout.allocate(self, &mut frame_alloc, &mut widget_alloc);
+
+        Allocation {
+            widget_alloc,
+            frame_alloc,
         }
     }
 }
