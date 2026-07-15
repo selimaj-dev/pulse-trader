@@ -7,6 +7,7 @@ pub enum LayoutItem {
 
     Frame { padding: u16, item: Box<LayoutItem> },
     Widget(Size),
+    Spacing(Size),
 }
 
 #[derive(Debug, Clone)]
@@ -28,7 +29,7 @@ impl LayoutItem {
                 let remaining = allocation
                     - items
                         .iter()
-                        .map(|item| item.get_size().get_fixed(alloc.height))
+                        .map(|item| item.get_size().get_fixed(allocation))
                         .sum::<u16>();
 
                 let total_weight = items
@@ -82,6 +83,10 @@ impl LayoutItem {
             Self::Widget(_) => {
                 full_alloc.widgets.push(*alloc);
             }
+
+            Self::Spacing(_) => {
+                full_alloc.frame.push(*alloc);
+            }
         }
     }
 
@@ -89,7 +94,7 @@ impl LayoutItem {
         match self {
             Self::Rows { unit, .. } => unit,
             Self::Columns { unit, .. } => unit,
-            Self::Widget(unit) => unit,
+            Self::Widget(unit) | Self::Spacing(unit) => unit,
             Self::Frame { item, .. } => item.get_size(),
         }
     }

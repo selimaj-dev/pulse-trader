@@ -1,11 +1,7 @@
 use std::any::Any;
 
 use pulse_ui::{
-    App,
-    layout::{LayoutItem, layout},
-    state::{Refresh, State},
-    unit::Size,
-    widget::{outline::Outline, spaced::SpacedRows},
+    App, layout::{LayoutItem, layout}, state::{Refresh, State}, unit::Size, widget::{outline::Outline, spaced::{SpacedColumns, SpacedRows}},
 };
 
 pub struct PulseTradeApp {
@@ -21,6 +17,10 @@ impl App for PulseTradeApp {
         }
 
         *self.count.lock().await += 1;
+
+        if *self.count.lock().await > 10 {
+            ctx.close().await;
+        }
     }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
@@ -35,11 +35,14 @@ impl App for PulseTradeApp {
 
         layout.draw(
             0,
-            SpacedRows(vec![
+            SpacedColumns(vec![
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("one")),
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("two")),
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("three")),
-                (LayoutItem::Widget(Size::Flex(1)), Box::new(self.count.display().await)),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(self.count.display().await),
+                ),
             ]),
         );
     }
