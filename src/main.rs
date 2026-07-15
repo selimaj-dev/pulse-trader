@@ -79,11 +79,11 @@ impl App for PulseTradeApp {
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(
                         vec![
-                            "WATCHLIST",
-                            "BTC  118,402.12  ▲ 0.82%",
-                            "ETH    3,912.48  ▼ 0.41%",
-                            "SOL      182.91  ▲ 2.18%",
-                            "XRP        2.84  ▲ 1.22%",
+                            " WATCHLIST",
+                            " BTC  118,402.12  ▲ 0.82%",
+                            " ETH    3,912.48  ▼ 0.41%",
+                            " SOL      182.91  ▲ 2.18%",
+                            " XRP        2.84  ▲ 1.22%",
                         ]
                         .join("\n"),
                     ),
@@ -92,9 +92,9 @@ impl App for PulseTradeApp {
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(
                         vec![
-                            "ACTIVE POSITIONS",
-                            "BTC  +4,120.40  20,000.00",
-                            "SOL  +2,435.40  20,000.00",
+                            " ACTIVE POSITIONS",
+                            " BTC  +4,120.40  20,000.00",
+                            " SOL  +2,435.40  20,000.00",
                         ]
                         .join("\n"),
                     ),
@@ -103,12 +103,12 @@ impl App for PulseTradeApp {
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(
                         vec![
-                            "ACCOUNT",
-                            "Equity:      $25,483.21",
-                            "Liquid:      $11,928.43",
-                            "Unreal:      +$483.12",
-                            "Realized:    +$2,182.49",
-                            "Margin:      0.00%",
+                            " ACCOUNT",
+                            " Equity:      $25,483.21",
+                            " Liquid:      $11,928.43",
+                            " Unreal:      +$483.12",
+                            " Realized:    +$2,182.49",
+                            " Margin:      0.00%",
                         ]
                         .join("\n"),
                     ),
@@ -121,24 +121,28 @@ impl App for PulseTradeApp {
             SpacedColumns(vec![
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(vec!["ACTIVE STRATEGIES"].join("\n")),
+                    Box::new(vec![" ACTIVE STRATEGIES"].join("\n")),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(
-                        vec!["SIGNALS", "BUY  BTC  LIM 118,800.12", "STL  BTC  120,00.00"]
-                            .join("\n"),
+                        vec![
+                            " SIGNALS",
+                            " BUY  BTC  LIM 118,800.12",
+                            " STL  BTC  120,00.00",
+                        ]
+                        .join("\n"),
                     ),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(
                         vec![
-                            "SYSTEM",
-                            "Feed:      Connected",
-                            "Exchange:  Binance",
-                            "DEX:       DEX SCREENER",
-                            "Latency:   18 ms",
+                            " SYSTEM",
+                            " Feed:      Connected",
+                            " Exchange:  Binance",
+                            " DEX:       DEX SCREENER",
+                            " Latency:   18 ms",
                         ]
                         .join("\n"),
                     ),
