@@ -1,3 +1,4 @@
+pub mod formatting;
 pub mod types;
 
 use std::any::Any;
@@ -15,11 +16,14 @@ use pulse_ui::{
     },
 };
 
-use crate::types::{Formatted, WatchListItem, space_out};
+use crate::{
+    formatting::{Formatted, apply_padding}, types::{ActivePosition, WatchListItem},
+};
 
 pub struct PulseTradeApp {
     command: State<InputState>,
     watch_list: State<Vec<WatchListItem>>,
+    active_positions: State<Vec<ActivePosition>>,
 }
 
 impl App for PulseTradeApp {
@@ -34,7 +38,7 @@ impl App for PulseTradeApp {
         watch_list.push(WatchListItem {
             symbol: "ETH".to_string(),
             price: 3_912.48,
-            trend: 0.41,
+            trend: -0.41,
         });
         watch_list.push(WatchListItem {
             symbol: "SOL".to_string(),
@@ -45,6 +49,29 @@ impl App for PulseTradeApp {
             symbol: "XRP".to_string(),
             price: 2.84,
             trend: 1.22,
+        });
+
+        let mut active_positions = self.active_positions.lock().await;
+
+        active_positions.push(ActivePosition {
+            symbol: "BTC".to_string(),
+            profit: 125.50,
+            amount: 0.25,
+        });
+        active_positions.push(ActivePosition {
+            symbol: "ETH".to_string(),
+            profit: -32.75,
+            amount: 1.0,
+        });
+        active_positions.push(ActivePosition {
+            symbol: "SOL".to_string(),
+            profit: 84.20,
+            amount: 5.0,
+        });
+        active_positions.push(ActivePosition {
+            symbol: "XRP".to_string(),
+            profit: 12.30,
+            amount: 0.75,
         });
     }
 
@@ -107,19 +134,16 @@ impl App for PulseTradeApp {
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(format!(
                         " WATCHLIST\n{}",
-                        space_out(self.watch_list.lock().await.get_formatted()).join("\n")
+                        apply_padding(self.watch_list.lock().await.get_formatted()).join("\n")
                     )),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(
-                        vec![
-                            " ACTIVE POSITIONS",
-                            " BTC  +4,120.40  20,000.00",
-                            " SOL  +2,435.40  20,000.00",
-                        ]
-                        .join("\n"),
-                    ),
+                    Box::new(format!(
+                        " ACTIVE POSITIONS\n{}",
+                        apply_padding(self.active_positions.lock().await.get_formatted())
+                            .join("\n")
+                    )),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
@@ -182,6 +206,7 @@ async fn main() {
     pulse_ui::run(|ctx| PulseTradeApp {
         command: ctx.use_state(InputState::new()),
         watch_list: ctx.use_state(Vec::new()),
+        active_positions: ctx.use_state(Vec::new()),
     })
     .await;
 }
