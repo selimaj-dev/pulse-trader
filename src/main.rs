@@ -5,7 +5,10 @@ use pulse_ui::{
     layout::{LayoutItem, layout},
     state::{Refresh, State},
     unit::Size,
-    widget::outline::VLine,
+    widget::{
+        center::Center,
+        outline::{Outline, VLine},
+    },
 };
 
 pub struct PulseTradeApp {
@@ -28,24 +31,28 @@ impl App for PulseTradeApp {
     }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
-        layout(vec![
-            LayoutItem::Columns {
-                unit: Size::Fixed(1),
-                items: vec![
-                    LayoutItem::Widget(Size::Flex(1)),
-                    LayoutItem::Widget(Size::Flex(1)),
-                    LayoutItem::Widget(Size::Flex(1)),
-                ],
-            },
-            LayoutItem::Spacing(Size::Fixed(1)),
-        ])
+        LayoutItem::Frame {
+            padding: 1,
+            item: Box::new(layout(vec![
+                LayoutItem::Columns {
+                    unit: Size::Fixed(1),
+                    items: vec![
+                        LayoutItem::Widget(Size::Flex(1)),
+                        LayoutItem::Widget(Size::Flex(1)),
+                        LayoutItem::Widget(Size::Flex(1)),
+                    ],
+                },
+                LayoutItem::Spacing(Size::Fixed(1)),
+            ])),
+        }
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
-        layout.draw_frame(2, VLine);
-        layout.draw(0, "one");
-        layout.draw(1, "two");
-        layout.draw(2, "three");
+        layout.draw_frame(0, Outline);
+        layout.draw_frame(3, VLine);
+        layout.draw(0, format!("PULSETRADER v0.1.0"));
+        layout.draw(1, Center("LIVE".to_string()));
+        layout.draw(2, Center(format!("14:32:51 UTC")));
     }
 }
 
