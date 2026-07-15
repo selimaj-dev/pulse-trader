@@ -1,15 +1,17 @@
+pub mod command;
 pub mod formatting;
 pub mod types;
 
 use std::any::Any;
 
+use chrono::{Local, Utc};
 use pulse_ui::{
     App,
     layout::{LayoutItem, layout},
     state::{Refresh, State},
     unit::Size,
     widget::{
-        align::Center,
+        align::End,
         input::{Input, InputState},
         outline::{Outline, VLine},
         spaced::SpacedColumns,
@@ -18,7 +20,10 @@ use pulse_ui::{
 
 use crate::{
     formatting::{Formatted, apply_padding},
-    types::{Account, ActivePosition, EventLog, Signal, System, WatchListItem},
+    types::{
+        ActivePosition, Alert, EventLog, InspectTarget, MarketOverview, Signal, Status,
+        WatchListItem,
+    },
 };
 
 pub struct PulseTradeApp {
@@ -27,12 +32,13 @@ pub struct PulseTradeApp {
     active_positions: State<Vec<ActivePosition>>,
     logs: State<Vec<EventLog>>,
     signals: State<Vec<Signal>>,
-    account: State<Account>,
-    system: State<System>,
+    market_overview: State<MarketOverview>,
+    status: State<Status>,
+    inspect: State<InspectTarget>,
 }
 
 impl App for PulseTradeApp {
-    async fn init(&mut self, ctx: &pulse_ui::state::Context) {
+    async fn init(&mut self, _ctx: &pulse_ui::state::Context) {
         let mut watch_list = self.watch_list.lock().await;
 
         watch_list.push(WatchListItem {
@@ -82,24 +88,49 @@ impl App for PulseTradeApp {
         let mut signals = self.signals.lock().await;
 
         signals.push(Signal {
-            kind: types::SignalKind::BUY,
+            kind: types::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::LIM,
+            param: types::SignalParameter::Lim,
             price: 118_800.0,
         });
 
         signals.push(Signal {
-            kind: types::SignalKind::BUY,
+            kind: types::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::TAP,
+            param: types::SignalParameter::Tap,
             price: 120_000.0,
         });
 
         signals.push(Signal {
-            kind: types::SignalKind::BUY,
+            kind: types::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::STL,
+            param: types::SignalParameter::Stl,
             price: 118_000.0,
+        });
+
+        let mut logs = self.logs.lock().await;
+
+        logs.push(EventLog {
+            kind: types::LogKind::Warn,
+            name: "pulse.init",
+            message: "We're still not done yet ;)".to_string(),
+        });
+
+        let mut market_overview = self.market_overview.lock().await;
+
+        market_overview.alerts.push(Alert {
+            level: types::AlertLevel::High,
+            message: "BTC funding rate elevated".to_string(),
+        });
+
+        market_overview.alerts.push(Alert {
+            level: types::AlertLevel::Medium,
+            message: "Market volatility increasing".to_string(),
+        });
+
+        market_overview.alerts.push(Alert {
+            level: types::AlertLevel::Low,
+            message: "ETH volatility returning to normal".to_string(),
         });
     }
 
@@ -111,10 +142,18 @@ impl App for PulseTradeApp {
         if let Some(event) = event.downcast_ref() {
             if self.command.value.lock().await.handle_event(event) {
                 return;
+            } else if let crossterm::event::Event::Key(key) = event {
+                if key.code.is_enter() {
+                    let mut command = self.command.lock().await;
+                    let command_text = command.text.clone();
+                    command.cursor = 0;
+                    command.text.clear();
+
+                    drop(command);
+                    self.execute_command(ctx, command_text.trim()).await;
+                }
             }
         }
-
-        ctx.close().await;
     }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
@@ -147,9 +186,19 @@ impl App for PulseTradeApp {
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
         layout.draw_frame(0, Outline);
-        layout.draw(0, format!(" PULSE TRADER v0.1.0"));
-        layout.draw(1, Center("LIVE".to_string()));
-        layout.draw(2, Center(format!("14:32:51 UTC")));
+        layout.draw(
+            0,
+            format!("   PULSE TRADER v{}", env!("CARGO_PKG_VERSION")),
+        );
+        // layout.draw(1, Center("LIVE".to_string()));
+        layout.draw(
+            2,
+            End(format!(
+                "{} UTC ({} Local)",
+                Utc::now().format("%H:%M"),
+                Local::now().format("%H:%M")
+            )),
+        );
         layout.draw_frame(3, VLine);
         layout.draw_frame(4, VLine);
         layout.draw_frame(5, VLine);
@@ -173,23 +222,20 @@ impl App for PulseTradeApp {
                             .join("\n")
                     )),
                 ),
-                (
-                    LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(format![
-                        " ACCOUNT\n{}",
-                        apply_padding(self.account.lock().await.get_formatted()).join("\n")
-                    ]),
-                ),
+                (LayoutItem::Widget(Size::Flex(1)), {
+                    let mo = self.market_overview.lock().await;
+                    Box::new(format!(
+                        " MARKET OVERVIEW\n{}\n\n{}",
+                        apply_padding(mo.get_formatted()).join("\n"),
+                        apply_padding(mo.alerts.get_formatted()).join("\n")
+                    ))
+                }),
             ]),
         );
 
         layout.draw(
             4,
             SpacedColumns(vec![
-                (
-                    LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(vec![" ACTIVE STRATEGIES"].join("\n")),
-                ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(format!(
@@ -199,20 +245,27 @@ impl App for PulseTradeApp {
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(format![
-                        " SYSTEM\n{}",
-                        apply_padding(self.system.lock().await.get_formatted()).join("\n")
-                    ]),
+                    Box::new(format!(
+                        " INSPECTOR\n{}",
+                        apply_padding(self.inspect.lock().await.get_formatted()).join("\n")
+                    )),
+                ),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(format!(
+                        " STATUS\n{}",
+                        apply_padding(self.status.lock().await.get_formatted()).join("\n")
+                    )),
                 ),
             ]),
         );
 
         layout.draw(
             5,
-            format![
+            format!(
                 " EVENT LOGS\n{}",
                 apply_padding(self.logs.lock().await.get_formatted()).join("\n")
-            ],
+            ),
         );
 
         layout.draw(6, Input(" > ", &*self.command.lock().await));
@@ -227,14 +280,14 @@ async fn main() {
         active_positions: ctx.use_state(Vec::new()),
         signals: ctx.use_state(Vec::new()),
         logs: ctx.use_state(Vec::new()),
-        account: ctx.use_state(Account {
-            equity: 25_483.21,
-            liquid: 11_928.43,
-            unreal: 483.12,
-            realized: 2_182.49,
-            margin: 0.0,
+        inspect: ctx.use_state(InspectTarget::None),
+        market_overview: ctx.use_state(MarketOverview {
+            trend: types::MarketTrend::Bullish,
+            volatility: types::Volatility::High,
+            pressure: 0.324,
+            alerts: Vec::new(),
         }),
-        system: ctx.use_state(System {
+        status: ctx.use_state(Status {
             feed: types::Feed::Connected,
             exchange: "Binance".to_string(),
             dex: "DEX SCREENER".to_string(),

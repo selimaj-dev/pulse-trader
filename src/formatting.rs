@@ -1,21 +1,85 @@
 use crate::types::{
-    Account, ActivePosition, EventLog, LogKind, Signal, SignalKind, System, WatchListItem,
+    ActivePosition, Alert, AlertLevel, EventLog, InspectTarget, LogKind, MarketOverview, Signal,
+    SignalKind, Status, WatchListItem,
 };
 
 pub trait Formatted {
     fn get_formatted(&self) -> Vec<String>;
 }
 
+impl Formatted for InspectTarget {
+    fn get_formatted(&self) -> Vec<String> {
+        match self {
+            Self::None => vec!["\x1b[2mnothing to inspect\x1b[0m".to_string()],
+
+            Self::Symbol(boxed) => {
+                let (watch, overview) = &**boxed;
+                vec![
+                    Property("Symbol", format!("\x1b[35m{}\x1b[0m", watch.symbol)),
+                    Property("Price", format!("\x1b[96m{}\x1b[0m", format_f64(watch.price))),
+                    Property("Trend", format!("{}", format_f64(watch.trend))),
+                    Property("Market", format!("{}", overview.trend)),
+                    Property("Volatility", format!("{}", overview.volatility)),
+                    Property(
+                        "Pressure",
+                        format!("{:+.2}%", overview.pressure * 100.0),
+                    ),
+                    Property("Alerts", format!("{}", overview.alerts.len())),
+                ]
+                .get_formatted()
+            }
+
+            Self::Position(pos) => vec![
+                Property("Symbol", format!("\x1b[35m{}\x1b[0m", pos.symbol)),
+                Property("Profit", format!("{:+.2}", pos.profit)),
+                Property("Amount", format!("{}", pos.amount)),
+            ]
+            .get_formatted(),
+
+            Self::Signal(sig) => vec![
+                Property("Type", format!("{}", sig.kind)),
+                Property("Symbol", format!("\x1b[35m{}\x1b[0m", sig.symbol)),
+                Property("Parameter", format!("{}", sig.param)),
+                Property("Price", format!("\x1b[96m{}\x1b[0m", format_f64(sig.price))),
+            ]
+            .get_formatted(),
+
+            Self::Alert(alert) => vec![
+                Property("Level", format!("{}", alert.level)),
+                Property("Message", alert.message.clone()),
+            ]
+            .get_formatted(),
+        }
+    }
+}
+
+impl Formatted for Alert {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            format!(
+                "{}{}\x1b[0m",
+                match &self.level {
+                    AlertLevel::Low => "\x1b[34m",
+                    AlertLevel::Medium => "\x1b[33m",
+                    AlertLevel::High => "\x1b[31m",
+                },
+                self.level
+            ),
+            self.message.clone(),
+        ]
+    }
+}
+
 impl Formatted for EventLog {
     fn get_formatted(&self) -> Vec<String> {
         vec![
             format!(
-                "{}{:?}\x1b[0m",
+                "{}{}\x1b[0m",
                 match &self.kind {
-                    LogKind::INFO => "\x1b[34m",
-                    LogKind::DEBUG => "\x1b[36m",
-                    LogKind::ERR => "\x1b[31m",
-                    LogKind::WARN => "\x1b[33m",
+                    LogKind::Info => "\x1b[34m",
+                    LogKind::Debug => "\x1b[36m",
+                    LogKind::Err => "\x1b[31m",
+                    LogKind::Warn => "\x1b[33m",
                 },
                 self.kind
             ),
@@ -28,13 +92,13 @@ impl Formatted for EventLog {
 impl Formatted for Signal {
     fn get_formatted(&self) -> Vec<String> {
         vec![
-            if matches!(self.kind, SignalKind::BUY) {
-                format!("\x1b[32m{:?}\x1b[0m", self.kind)
+            if matches!(self.kind, SignalKind::Buy) {
+                format!("\x1b[32m{}\x1b[0m", self.kind)
             } else {
-                format!("\x1b[31m{:?}\x1b[0m", self.kind)
+                format!("\x1b[31m{}\x1b[0m", self.kind)
             },
             format!("\x1b[35m{}\x1b[0m", self.symbol),
-            format!("\x1b[34m{:?}\x1b[0m", self.param),
+            format!("\x1b[34m{}\x1b[0m", self.param),
             format_f64(self.price),
         ]
     }
@@ -76,22 +140,27 @@ impl Formatted for ActivePosition {
     }
 }
 
-pub struct Property(&'static str, String);
+struct Property(&'static str, String);
 
-impl Formatted for Account {
+impl Formatted for MarketOverview {
     fn get_formatted(&self) -> Vec<String> {
         vec![
-            Property("Equity", format_f64(self.equity)),
-            Property("Liquid", format_f64(self.liquid)),
-            Property("Unreal", format_f64(self.unreal)),
-            Property("Realized", format_f64(self.realized)),
-            Property("Margin", format_f64(self.margin)),
+            Property("TREND", format!("{}", self.trend)),
+            Property("VOLATILITY", format!("{}", self.volatility)),
+            Property(
+                "PRESSURE",
+                if self.pressure.is_sign_positive() {
+                    format!("\x1b[32m{:.3}\x1b[0m", self.pressure)
+                } else {
+                    format!("\x1b[31m{:.3}\x1b[0m", self.pressure)
+                },
+            ),
         ]
         .get_formatted()
     }
 }
 
-impl Formatted for System {
+impl Formatted for Status {
     fn get_formatted(&self) -> Vec<String> {
         vec![
             Property("Feed", format!("{:?}", self.feed)),

@@ -67,3 +67,37 @@ impl Widget for SpacedColumns {
         }
     }
 }
+
+pub struct SpacedRows2(pub Vec<(LayoutItem, Box<dyn Widget>)>);
+
+impl Widget for SpacedRows2 {
+    fn render(&self, scope: &mut crate::render::RenderScope) {
+        let alloc = scope.rect.allocate(&crate::layout::LayoutItem::Rows {
+            unit: Percent(100),
+            items: self.0.iter().map(|v| v.0.clone()).collect(),
+        });
+
+        for i in 0..alloc.widgets.len() {
+            let item = &self.0[i];
+
+            alloc.draw(i, &*item.1);
+        }
+    }
+}
+
+pub struct SpacedColumns2(pub Vec<(LayoutItem, Box<dyn Widget>)>);
+
+impl Widget for SpacedColumns2 {
+    fn render(&self, scope: &mut crate::render::RenderScope) {
+        let alloc = scope.rect.allocate(&crate::layout::LayoutItem::Columns {
+            unit: Percent(100),
+            items: self.0.iter().map(|v| v.0.clone()).collect(),
+        });
+
+        for i in 0..alloc.widgets.len() {
+            let item = &self.0[i];
+
+            alloc.draw(i, &*item.1);
+        }
+    }
+}

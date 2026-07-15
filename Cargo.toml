@@ -4,8 +4,10 @@ version = "0.1.0-alpha.0"
 edition = "2024"
 
 [dependencies]
+chrono = "0.4.45"
 pulse-ui = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+crossterm = { workspace = true }
 
 [workspace]
 members = ["pulse-ui"]
