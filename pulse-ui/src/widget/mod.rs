@@ -1,3 +1,4 @@
+pub mod center;
 pub mod outline;
 pub mod spaced;
 

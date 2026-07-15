@@ -43,7 +43,10 @@ impl App for PulseTradeApp {
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("one")),
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("two")),
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("three")),
-                (LayoutItem::Widget(Size::Flex(1)), Box::new(self.count.display().await)),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(self.count.display().await),
+                ),
             ]),
         );
     }
