@@ -26,23 +26,54 @@ impl LayoutItem {
 
                 let allocation = if is_row { alloc.height } else { alloc.width };
 
-                let remaining = allocation
-                    - items
-                        .iter()
-                        .map(|item| item.get_size().get_fixed(allocation))
-                        .sum::<u16>();
+                let fixed_total: u16 = items
+                    .iter()
+                    .map(|item| item.get_size().get_fixed(allocation))
+                    .sum();
+
+                let remaining = allocation.saturating_sub(fixed_total);
 
                 let total_weight = items
                     .iter()
                     .map(|item| item.get_size().get_flex())
                     .sum::<u16>();
 
+                let base_allocs: Vec<u16> = items
+                    .iter()
+                    .map(|item| item.get_size().get(allocation, remaining, total_weight))
+                    .collect();
+
+                let flex_alloc_total: u16 = items
+                    .iter()
+                    .zip(base_allocs.iter())
+                    .filter(|(item, _)| item.get_size().get_flex() > 0)
+                    .map(|(_, a)| a)
+                    .sum();
+
+                let gap = remaining.saturating_sub(flex_alloc_total);
+
+                let fill_count = items
+                    .iter()
+                    .filter(|item| item.get_size().is_fill())
+                    .count() as u16;
+
+                let gap_per_fill = if fill_count > 0 { gap / fill_count } else { 0 };
+                let gap_remainder = if fill_count > 0 { gap % fill_count } else { 0 };
+
                 let mut curr = if is_row { alloc.y } else { alloc.x };
+                let mut fill_idx = 0u16;
 
-                for item in items {
+                for (i, item) in items.iter().enumerate() {
                     let size = item.get_size();
+                    let mut unit_alloc = base_allocs[i];
 
-                    let unit_alloc = size.get(allocation, remaining, total_weight);
+                    if size.is_fill() {
+                        unit_alloc += gap_per_fill;
+                        if fill_idx == 0 {
+                            unit_alloc += gap_remainder;
+                        }
+                        fill_idx += 1;
+                    }
 
                     let item_alloc = if is_row {
                         Rect {

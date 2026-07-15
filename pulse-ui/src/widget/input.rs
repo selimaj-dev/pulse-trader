@@ -68,6 +68,41 @@ impl InputState {
             }
 
             Event::Key(KeyEvent {
+                code: KeyCode::Char('h'),
+                modifiers,
+                ..
+            }) if modifiers.contains(KeyModifiers::CONTROL) => {
+                if self.cursor > 0 {
+                    let prev = self.text[..self.cursor]
+                        .char_indices()
+                        .last()
+                        .map(|(i, _)| i)
+                        .unwrap();
+
+                    self.text.remove(prev);
+                    self.cursor = prev;
+                }
+                true
+            }
+
+            Event::Key(KeyEvent {
+                code: KeyCode::Delete,
+                ..
+            }) => {
+                if self.cursor < self.text.len() {
+                    let prev = self.text[..self.cursor+1]
+                        .char_indices()
+                        .last()
+                        .map(|(i, _)| i)
+                        .unwrap();
+
+                    self.text.remove(prev);
+                    self.cursor = prev;
+                }
+                true
+            }
+
+            Event::Key(KeyEvent {
                 code: KeyCode::Char(c),
                 modifiers,
                 ..

@@ -1,13 +1,49 @@
-use crate::types::{Account, ActivePosition, WatchListItem};
+use crate::types::{
+    Account, ActivePosition, EventLog, LogKind, Signal, SignalKind, System, WatchListItem,
+};
 
 pub trait Formatted {
     fn get_formatted(&self) -> Vec<String>;
 }
 
+impl Formatted for EventLog {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            format!(
+                "{}{:?}\x1b[0m",
+                match &self.kind {
+                    LogKind::INFO => "\x1b[34m",
+                    LogKind::DEBUG => "\x1b[36m",
+                    LogKind::ERR => "\x1b[31m",
+                    LogKind::WARN => "\x1b[33m",
+                },
+                self.kind
+            ),
+            format!("(\x1b[37m{}\x1b[0m)", self.name),
+            self.message.clone(),
+        ]
+    }
+}
+
+impl Formatted for Signal {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            if matches!(self.kind, SignalKind::BUY) {
+                format!("\x1b[32m{:?}\x1b[0m", self.kind)
+            } else {
+                format!("\x1b[31m{:?}\x1b[0m", self.kind)
+            },
+            format!("\x1b[35m{}\x1b[0m", self.symbol),
+            format!("\x1b[34m{:?}\x1b[0m", self.param),
+            format_f64(self.price),
+        ]
+    }
+}
+
 impl Formatted for WatchListItem {
     fn get_formatted(&self) -> Vec<String> {
         vec![
-            format!("\x1b[35m{}\x1b[0m", self.symbol.to_string()),
+            format!("\x1b[35m{}\x1b[0m", self.symbol),
             format_f64(self.price),
             format!(
                 "{} {}",
@@ -25,7 +61,7 @@ impl Formatted for WatchListItem {
 impl Formatted for ActivePosition {
     fn get_formatted(&self) -> Vec<String> {
         vec![
-            format!("\x1b[35m{}\x1b[0m", self.symbol.to_string()),
+            format!("\x1b[35m{}\x1b[0m", self.symbol),
             format_f64(self.amount),
             format!(
                 "{} {}",
@@ -50,6 +86,18 @@ impl Formatted for Account {
             Property("Unreal", format_f64(self.unreal)),
             Property("Realized", format_f64(self.realized)),
             Property("Margin", format_f64(self.margin)),
+        ]
+        .get_formatted()
+    }
+}
+
+impl Formatted for System {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            Property("Feed", format!("{:?}", self.feed)),
+            Property("Exchange", self.exchange.clone()),
+            Property("DEX", self.dex.clone()),
+            Property("Latency", format!("{} ms", self.latency)),
         ]
         .get_formatted()
     }
