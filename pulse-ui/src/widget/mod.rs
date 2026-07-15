@@ -1,6 +1,7 @@
-pub mod center;
+pub mod align;
 pub mod outline;
 pub mod spaced;
+pub mod dynamic;
 
 use crate::render::RenderScope;
 

@@ -6,7 +6,7 @@ use pulse_ui::{
     state::{Refresh, State},
     unit::Size,
     widget::{
-        center::Center,
+        align::Center,
         outline::{Outline, VLine},
         spaced::{SpacedColumns, SpacedRows},
     },
