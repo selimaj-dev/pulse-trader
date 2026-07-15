@@ -7,6 +7,7 @@ edition = "2024"
 chrono = "0.4.45"
 pulse-ui = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+crossterm = { workspace = true }
 
 [workspace]
 members = ["pulse-ui"]

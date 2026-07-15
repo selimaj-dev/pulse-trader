@@ -1,3 +1,4 @@
+pub mod command;
 pub mod formatting;
 pub mod types;
 
@@ -141,10 +142,18 @@ impl App for PulseTradeApp {
         if let Some(event) = event.downcast_ref() {
             if self.command.value.lock().await.handle_event(event) {
                 return;
+            } else if let crossterm::event::Event::Key(key) = event {
+                if key.code.is_enter() {
+                    let mut command = self.command.lock().await;
+                    let command_text = command.text.clone();
+                    command.cursor = 0;
+                    command.text.clear();
+
+                    drop(command);
+                    self.execute_command(ctx, command_text.trim()).await;
+                }
             }
         }
-
-        ctx.close().await;
     }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {

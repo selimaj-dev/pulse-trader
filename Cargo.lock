@@ -309,6 +309,7 @@ name = "pulse-trader"
 version = "0.1.0-alpha.0"
 dependencies = [
  "chrono",
+ "crossterm",
  "pulse-ui",
  "tokio",
 ]
