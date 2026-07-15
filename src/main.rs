@@ -209,7 +209,10 @@ impl App for PulseTradeApp {
 
         layout.draw(
             5,
-            apply_padding(self.logs.lock().await.get_formatted()).join("\n"),
+            format![
+                " EVENT LOGS\n{}",
+                apply_padding(self.logs.lock().await.get_formatted()).join("\n")
+            ],
         );
 
         layout.draw(6, Input(" > ", &*self.command.lock().await));
