@@ -10,6 +10,7 @@ pub struct Context {
     pub(crate) tx: Sender<Box<dyn Any + Send + Sync>>,
 }
 
+#[derive(Debug)]
 pub struct State<T> {
     pub value: Arc<Mutex<T>>,
     tx: Sender<Box<dyn Any + Send + Sync>>,
@@ -43,6 +44,15 @@ impl<T> State<T> {
 impl<T: std::fmt::Display> State<T> {
     pub async fn display(&self) -> String {
         self.lock().await.to_string()
+    }
+}
+
+impl<T> Clone for State<T> {
+    fn clone(&self) -> Self {
+        State {
+            value: self.value.clone(),
+            tx: self.tx.clone(),
+        }
     }
 }
 
