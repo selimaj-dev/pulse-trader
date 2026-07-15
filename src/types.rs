@@ -10,7 +10,27 @@ pub struct ActivePosition {
     pub amount: f64,
 }
 
-pub struct MarketOverview {}
+#[derive(Debug, Clone, Copy)]
+pub enum MarketTrend {
+    Bullish,
+    Bearish,
+    Neutral,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Volatility {
+    Low,
+    Medium,
+    High,
+}
+
+pub struct MarketOverview {
+    pub trend: MarketTrend,
+    pub volatility: Volatility,
+    pub pressure: f64,
+
+    pub alerts: Vec<Alert>,
+}
 
 #[derive(Debug, Clone, Copy)]
 pub enum Feed {
@@ -60,5 +80,18 @@ pub enum LogKind {
 pub struct EventLog {
     pub kind: LogKind,
     pub name: &'static str,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum AlertLevel {
+    H,
+    M,
+    L,
+}
+
+#[derive(Debug, Clone)]
+pub struct Alert {
+    pub level: AlertLevel,
     pub message: String,
 }

@@ -13,13 +13,13 @@ use pulse_ui::{
         align::End,
         input::{Input, InputState},
         outline::{Outline, VLine},
-        spaced::SpacedColumns,
+        spaced::{SpacedColumns, SpacedColumns2, SpacedRows2},
     },
 };
 
 use crate::{
     formatting::{Formatted, apply_padding},
-    types::{ActivePosition, EventLog, MarketOverview, Signal, Status, WatchListItem},
+    types::{ActivePosition, Alert, EventLog, MarketOverview, Signal, Status, WatchListItem},
 };
 
 pub struct PulseTradeApp {
@@ -33,7 +33,7 @@ pub struct PulseTradeApp {
 }
 
 impl App for PulseTradeApp {
-    async fn init(&mut self, ctx: &pulse_ui::state::Context) {
+    async fn init(&mut self, _ctx: &pulse_ui::state::Context) {
         let mut watch_list = self.watch_list.lock().await;
 
         watch_list.push(WatchListItem {
@@ -109,6 +109,23 @@ impl App for PulseTradeApp {
             kind: types::LogKind::WARN,
             name: "pulse.init",
             message: "We're still not done yet ;)".to_string(),
+        });
+
+        let mut market_overview = self.market_overview.lock().await;
+
+        market_overview.alerts.push(Alert {
+            level: types::AlertLevel::H,
+            message: "BTC funding rate elevated".to_string(),
+        });
+
+        market_overview.alerts.push(Alert {
+            level: types::AlertLevel::M,
+            message: "Market volatility increasing".to_string(),
+        });
+
+        market_overview.alerts.push(Alert {
+            level: types::AlertLevel::L,
+            message: "ETH volatility returning to normal".to_string(),
         });
     }
 
@@ -192,13 +209,14 @@ impl App for PulseTradeApp {
                             .join("\n")
                     )),
                 ),
-                (
-                    LayoutItem::Widget(Size::Flex(1)),
+                (LayoutItem::Widget(Size::Flex(1)), {
+                    let mo = self.market_overview.lock().await;
                     Box::new(format![
-                        " MARKET OVERVIEW\n{}",
-                        apply_padding(self.market_overview.lock().await.get_formatted()).join("\n")
-                    ]),
-                ),
+                        " MARKET OVERVIEW\n{}\n\n{}",
+                        apply_padding(mo.get_formatted()).join("\n"),
+                        apply_padding(mo.alerts.get_formatted(),).join("\n")
+                    ])
+                }),
             ]),
         );
 
@@ -246,7 +264,12 @@ async fn main() {
         active_positions: ctx.use_state(Vec::new()),
         signals: ctx.use_state(Vec::new()),
         logs: ctx.use_state(Vec::new()),
-        market_overview: ctx.use_state(MarketOverview {}),
+        market_overview: ctx.use_state(MarketOverview {
+            trend: types::MarketTrend::Bullish,
+            volatility: types::Volatility::High,
+            pressure: 0.324,
+            alerts: Vec::new(),
+        }),
         status: ctx.use_state(Status {
             feed: types::Feed::Connected,
             exchange: "Binance".to_string(),

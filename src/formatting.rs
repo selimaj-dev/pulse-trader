@@ -1,9 +1,27 @@
 use crate::types::{
-    ActivePosition, EventLog, LogKind, MarketOverview, Signal, SignalKind, Status, WatchListItem,
+    ActivePosition, Alert, AlertLevel, EventLog, LogKind, MarketOverview, Signal, SignalKind,
+    Status, WatchListItem,
 };
 
 pub trait Formatted {
     fn get_formatted(&self) -> Vec<String>;
+}
+
+impl Formatted for Alert {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            format!(
+                "{}{:?}\x1b[0m",
+                match &self.level {
+                    AlertLevel::L => "\x1b[34m",
+                    AlertLevel::M => "\x1b[33m",
+                    AlertLevel::H => "\x1b[31m",
+                },
+                self.level
+            ),
+            self.message.clone(),
+        ]
+    }
 }
 
 impl Formatted for EventLog {
@@ -80,7 +98,19 @@ pub struct Property(&'static str, String);
 
 impl Formatted for MarketOverview {
     fn get_formatted(&self) -> Vec<String> {
-        vec![Property("Equity", format_f64(1.0))].get_formatted()
+        vec![
+            Property("TREND", format!("{:?}", self.trend)),
+            Property("VOLATILITY", format!("{:?}", self.volatility)),
+            Property(
+                "PRESSURE",
+                if self.pressure.is_sign_positive() {
+                    format!("\x1b[32m{:.3}\x1b[0m", self.pressure)
+                } else {
+                    format!("\x1b[31m{:.3}\x1b[0m", self.pressure)
+                },
+            ),
+        ]
+        .get_formatted()
     }
 }
 
