@@ -1,4 +1,4 @@
-use crate::types::{ActivePosition, WatchListItem};
+use crate::types::{Account, ActivePosition, WatchListItem};
 
 pub trait Formatted {
     fn get_formatted(&self) -> Vec<String>;
@@ -40,6 +40,27 @@ impl Formatted for ActivePosition {
     }
 }
 
+pub struct Property(&'static str, String);
+
+impl Formatted for Account {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            Property("Equity", format_f64(self.equity)),
+            Property("Liquid", format_f64(self.liquid)),
+            Property("Unreal", format_f64(self.unreal)),
+            Property("Realized", format_f64(self.realized)),
+            Property("Margin", format_f64(self.margin)),
+        ]
+        .get_formatted()
+    }
+}
+
+impl Formatted for Property {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![format!("\x1b[91m{}\x1b[0m", self.0), self.1.clone()]
+    }
+}
+
 impl<T: Formatted> Formatted for Vec<T> {
     fn get_formatted(&self) -> Vec<String> {
         let mut output = Vec::new();
@@ -66,7 +87,7 @@ impl<T: Formatted> Formatted for Vec<T> {
             for (col_idx, col) in row.iter().enumerate() {
                 let width = widths[col_idx];
 
-                row_out.push_str(&format!("{:>width$}", col, width = width));
+                row_out.push_str(&format!("{:<width$}", col, width = width));
 
                 if col_idx + 1 != row.len() {
                     row_out.push_str("  ");
