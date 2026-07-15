@@ -2,6 +2,7 @@ pub mod align;
 pub mod outline;
 pub mod spaced;
 pub mod dynamic;
+pub mod input;
 
 use crate::render::RenderScope;
 

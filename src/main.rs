@@ -3,16 +3,19 @@ use std::any::Any;
 use pulse_ui::{
     App,
     layout::{LayoutItem, layout},
-    state::Refresh,
+    state::{Refresh, State},
     unit::Size,
     widget::{
         align::Center,
+        input::{Input, InputState},
         outline::{Outline, VLine},
-        spaced::{SpacedColumns, SpacedRows},
+        spaced::SpacedColumns,
     },
 };
 
-pub struct PulseTradeApp {}
+pub struct PulseTradeApp {
+    command: State<InputState>,
+}
 
 impl App for PulseTradeApp {
     async fn init(&mut self, ctx: &pulse_ui::state::Context) {}
@@ -20,6 +23,12 @@ impl App for PulseTradeApp {
     async fn update(&mut self, ctx: &pulse_ui::state::Context, event: Box<dyn Any + Send + Sync>) {
         if let Some(Refresh) = event.downcast_ref() {
             return;
+        }
+
+        if let Some(event) = event.downcast_ref() {
+            if self.command.value.lock().await.handle_event(event) {
+                return;
+            }
         }
 
         ctx.close().await;
@@ -117,12 +126,8 @@ impl App for PulseTradeApp {
                 (
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(
-                        vec![
-                            "SIGNALS",
-                            "BUY  BTC  LIM 118,800.12",
-                            "STL  BTC  120,00.00",
-                        ]
-                        .join("\n"),
+                        vec!["SIGNALS", "BUY  BTC  LIM 118,800.12", "STL  BTC  120,00.00"]
+                            .join("\n"),
                     ),
                 ),
                 (
@@ -140,10 +145,15 @@ impl App for PulseTradeApp {
                 ),
             ]),
         );
+
+        layout.draw(6, Input("> ", &*self.command.lock().await));
     }
 }
 
 #[tokio::main]
 async fn main() {
-    pulse_ui::run(|_ctx| PulseTradeApp {}).await;
+    pulse_ui::run(|ctx| PulseTradeApp {
+        command: ctx.use_state(InputState::new()),
+    })
+    .await;
 }
