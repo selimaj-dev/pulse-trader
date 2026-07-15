@@ -88,30 +88,30 @@ impl App for PulseTradeApp {
         let mut signals = self.signals.lock().await;
 
         signals.push(Signal {
-            kind: types::SignalKind::BUY,
+            kind: types::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::LIM,
+            param: types::SignalParameter::Lim,
             price: 118_800.0,
         });
 
         signals.push(Signal {
-            kind: types::SignalKind::BUY,
+            kind: types::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::TAP,
+            param: types::SignalParameter::Tap,
             price: 120_000.0,
         });
 
         signals.push(Signal {
-            kind: types::SignalKind::BUY,
+            kind: types::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::STL,
+            param: types::SignalParameter::Stl,
             price: 118_000.0,
         });
 
         let mut logs = self.logs.lock().await;
 
         logs.push(EventLog {
-            kind: types::LogKind::WARN,
+            kind: types::LogKind::Warn,
             name: "pulse.init",
             message: "We're still not done yet ;)".to_string(),
         });
@@ -119,17 +119,17 @@ impl App for PulseTradeApp {
         let mut market_overview = self.market_overview.lock().await;
 
         market_overview.alerts.push(Alert {
-            level: types::AlertLevel::H,
+            level: types::AlertLevel::High,
             message: "BTC funding rate elevated".to_string(),
         });
 
         market_overview.alerts.push(Alert {
-            level: types::AlertLevel::M,
+            level: types::AlertLevel::Medium,
             message: "Market volatility increasing".to_string(),
         });
 
         market_overview.alerts.push(Alert {
-            level: types::AlertLevel::L,
+            level: types::AlertLevel::Low,
             message: "ETH volatility returning to normal".to_string(),
         });
     }
@@ -224,11 +224,11 @@ impl App for PulseTradeApp {
                 ),
                 (LayoutItem::Widget(Size::Flex(1)), {
                     let mo = self.market_overview.lock().await;
-                    Box::new(format![
+                    Box::new(format!(
                         " MARKET OVERVIEW\n{}\n\n{}",
                         apply_padding(mo.get_formatted()).join("\n"),
-                        apply_padding(mo.alerts.get_formatted(),).join("\n")
-                    ])
+                        apply_padding(mo.alerts.get_formatted()).join("\n")
+                    ))
                 }),
             ]),
         );
@@ -252,20 +252,20 @@ impl App for PulseTradeApp {
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(format![
+                    Box::new(format!(
                         " STATUS\n{}",
                         apply_padding(self.status.lock().await.get_formatted()).join("\n")
-                    ]),
+                    )),
                 ),
             ]),
         );
 
         layout.draw(
             5,
-            format![
+            format!(
                 " EVENT LOGS\n{}",
                 apply_padding(self.logs.lock().await.get_formatted()).join("\n")
-            ],
+            ),
         );
 
         layout.draw(6, Input(" > ", &*self.command.lock().await));

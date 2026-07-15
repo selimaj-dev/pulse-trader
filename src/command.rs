@@ -6,7 +6,7 @@ impl PulseTradeApp {
             return;
         }
 
-        let (command, args) = if let Some((command, args)) = command.split_once(" ") {
+        let (command, _args) = if let Some((command, args)) = command.split_once(" ") {
             (command, args.split(" ").collect())
         } else {
             (command, Vec::new())
@@ -19,7 +19,7 @@ impl PulseTradeApp {
 
             _ => {
                 self.logs.lock().await.push(EventLog {
-                    kind: crate::types::LogKind::ERR,
+                    kind: crate::types::LogKind::Err,
                     name: "cmd",
                     message: format!("Command '{}' not found", command),
                 });
