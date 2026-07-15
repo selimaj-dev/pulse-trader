@@ -18,13 +18,14 @@ use pulse_ui::{
 
 use crate::{
     formatting::{Formatted, apply_padding},
-    types::{Account, ActivePosition, System, WatchListItem},
+    types::{Account, ActivePosition, Signal, System, WatchListItem},
 };
 
 pub struct PulseTradeApp {
     command: State<InputState>,
     watch_list: State<Vec<WatchListItem>>,
     active_positions: State<Vec<ActivePosition>>,
+    signals: State<Vec<Signal>>,
     account: State<Account>,
     system: State<System>,
 }
@@ -75,6 +76,29 @@ impl App for PulseTradeApp {
             symbol: "XRP".to_string(),
             profit: 12.30,
             amount: 0.75,
+        });
+
+        let mut signals = self.signals.lock().await;
+
+        signals.push(Signal {
+            kind: types::SignalKind::BUY,
+            symbol: "BTC".to_string(),
+            param: types::SignalParameter::LIM,
+            price: 118_800.0,
+        });
+
+        signals.push(Signal {
+            kind: types::SignalKind::BUY,
+            symbol: "BTC".to_string(),
+            param: types::SignalParameter::TAP,
+            price: 120_000.0,
+        });
+
+        signals.push(Signal {
+            kind: types::SignalKind::BUY,
+            symbol: "BTC".to_string(),
+            param: types::SignalParameter::STL,
+            price: 118_000.0,
         });
     }
 
@@ -167,22 +191,18 @@ impl App for PulseTradeApp {
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(
-                        vec![
-                            " SIGNALS",
-                            " BUY  BTC  LIM 118,800.12",
-                            " BUY  BTC  STL 118,000.00",
-                            " BUY  BTC  TAP 120,000.00",
-                        ]
-                        .join("\n"),
-                    ),
+                    Box::new(format!(
+                        " SIGNALS\n{}",
+                        apply_padding(self.signals.lock().await.get_formatted())
+                            .join("\n")
+                    )),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(format![
                         " SYSTEM\n{}",
                         apply_padding(self.system.lock().await.get_formatted()).join("\n")
-                        ]),
+                    ]),
                 ),
             ]),
         );
@@ -197,6 +217,7 @@ async fn main() {
         command: ctx.use_state(InputState::new()),
         watch_list: ctx.use_state(Vec::new()),
         active_positions: ctx.use_state(Vec::new()),
+        signals: ctx.use_state(Vec::new()),
         account: ctx.use_state(Account {
             equity: 25_483.21,
             liquid: 11_928.43,

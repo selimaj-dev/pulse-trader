@@ -32,3 +32,24 @@ pub struct System {
     pub dex: String,
     pub latency: u16,
 }
+
+#[derive(Debug, Clone, Copy)]
+pub enum SignalKind {
+    BUY,
+    SELL,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum SignalParameter {
+    LIM,
+    STL,
+    TAP,
+    CHK,
+}
+
+pub struct Signal {
+    pub kind: SignalKind,
+    pub symbol: String,
+    pub param: SignalParameter,
+    pub price: f64,
+}

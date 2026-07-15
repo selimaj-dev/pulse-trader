@@ -1,13 +1,28 @@
-use crate::types::{Account, ActivePosition, System, WatchListItem};
+use crate::types::{Account, ActivePosition, Signal, SignalKind, System, WatchListItem};
 
 pub trait Formatted {
     fn get_formatted(&self) -> Vec<String>;
 }
 
+impl Formatted for Signal {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            if matches!(self.kind, SignalKind::BUY) {
+                format!("\x1b[32m{:?}\x1b[0m", self.kind)
+            } else {
+                format!("\x1b[31m{:?}\x1b[0m", self.kind)
+            },
+            format!("\x1b[35m{}\x1b[0m", self.symbol),
+            format!("\x1b[34m{:?}\x1b[0m", self.param),
+            format_f64(self.price),
+        ]
+    }
+}
+
 impl Formatted for WatchListItem {
     fn get_formatted(&self) -> Vec<String> {
         vec![
-            format!("\x1b[35m{}\x1b[0m", self.symbol.to_string()),
+            format!("\x1b[35m{}\x1b[0m", self.symbol),
             format_f64(self.price),
             format!(
                 "{} {}",
@@ -25,7 +40,7 @@ impl Formatted for WatchListItem {
 impl Formatted for ActivePosition {
     fn get_formatted(&self) -> Vec<String> {
         vec![
-            format!("\x1b[35m{}\x1b[0m", self.symbol.to_string()),
+            format!("\x1b[35m{}\x1b[0m", self.symbol),
             format_f64(self.amount),
             format!(
                 "{} {}",
