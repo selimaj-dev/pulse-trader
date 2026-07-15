@@ -106,20 +106,37 @@ impl App for PulseTradeApp {
                 ),
             ]),
         );
+
         layout.draw(
             4,
             SpacedColumns(vec![
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(SpacedRows(vec![])),
+                    Box::new(vec!["ACTIVE STRATEGIES"].join("\n")),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(SpacedRows(vec![])),
+                    Box::new(
+                        vec![
+                            "SIGNALS",
+                            "BUY  BTC  LIM 118,800.12",
+                            "STL  BTC  120,00.00",
+                        ]
+                        .join("\n"),
+                    ),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(SpacedRows(vec![])),
+                    Box::new(
+                        vec![
+                            "SYSTEM",
+                            "Feed:      Connected",
+                            "Exchange:  Binance",
+                            "DEX:       DEX SCREENER",
+                            "Latency:   18 ms",
+                        ]
+                        .join("\n"),
+                    ),
                 ),
             ]),
         );
