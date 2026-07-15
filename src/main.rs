@@ -1,7 +1,11 @@
 use std::any::Any;
 
 use pulse_ui::{
-    App, layout::{LayoutItem, layout}, state::{Refresh, State}, unit::Size, widget::{outline::Outline, spaced::{SpacedColumns, SpacedRows}},
+    App,
+    layout::{LayoutItem, layout},
+    state::{Refresh, State},
+    unit::Size,
+    widget::outline::VLine,
 };
 
 pub struct PulseTradeApp {
@@ -24,27 +28,24 @@ impl App for PulseTradeApp {
     }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
-        layout(vec![LayoutItem::Frame {
-            padding: 1,
-            item: Box::new(LayoutItem::Widget(Size::Flex(1))),
-        }])
+        layout(vec![
+            LayoutItem::Columns {
+                unit: Size::Fixed(1),
+                items: vec![
+                    LayoutItem::Widget(Size::Flex(1)),
+                    LayoutItem::Widget(Size::Flex(1)),
+                    LayoutItem::Widget(Size::Flex(1)),
+                ],
+            },
+            LayoutItem::Spacing(Size::Fixed(1)),
+        ])
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
-        layout.draw_frame(0, Outline);
-
-        layout.draw(
-            0,
-            SpacedColumns(vec![
-                (LayoutItem::Widget(Size::Flex(1)), Box::new("one")),
-                (LayoutItem::Widget(Size::Flex(1)), Box::new("two")),
-                (LayoutItem::Widget(Size::Flex(1)), Box::new("three")),
-                (
-                    LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(self.count.display().await),
-                ),
-            ]),
-        );
+        layout.draw_frame(2, VLine);
+        layout.draw(0, "one");
+        layout.draw(1, "two");
+        layout.draw(2, "three");
     }
 }
 
