@@ -28,7 +28,7 @@ impl LayoutItem {
                 let remaining = allocation
                     - items
                         .iter()
-                        .map(|item| item.get_size().get_fixed(alloc.height))
+                        .map(|item| item.get_size().get_fixed(allocation))
                         .sum::<u16>();
 
                 let total_weight = items
