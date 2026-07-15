@@ -8,6 +8,7 @@ use pulse_ui::{
     widget::{
         center::Center,
         outline::{Outline, VLine},
+        spaced::{SpacedColumns, SpacedRows},
     },
 };
 
@@ -42,17 +43,66 @@ impl App for PulseTradeApp {
                         LayoutItem::Widget(Size::Flex(1)),
                     ],
                 },
+                // Account status
                 LayoutItem::Spacing(Size::Fixed(1)),
+                LayoutItem::Widget(Size::Flex(1)),
+                // Live status
+                LayoutItem::Spacing(Size::Fixed(1)),
+                LayoutItem::Widget(Size::Flex(1)),
+                // Event logs
+                LayoutItem::Spacing(Size::Fixed(1)),
+                LayoutItem::Widget(Size::Flex(1)),
+                // Input
+                LayoutItem::Spacing(Size::Fixed(1)),
+                LayoutItem::Widget(Size::Fixed(1)),
             ])),
         }
     }
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
         layout.draw_frame(0, Outline);
-        layout.draw_frame(3, VLine);
         layout.draw(0, format!("PULSETRADER v0.1.0"));
         layout.draw(1, Center("LIVE".to_string()));
         layout.draw(2, Center(format!("14:32:51 UTC")));
+        layout.draw_frame(3, VLine);
+        layout.draw_frame(4, VLine);
+        layout.draw_frame(5, VLine);
+        layout.draw_frame(6, VLine);
+
+        layout.draw(
+            3,
+            SpacedColumns(vec![
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(SpacedRows(vec![])),
+                ),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(SpacedRows(vec![])),
+                ),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(SpacedRows(vec![])),
+                ),
+            ]),
+        );
+        layout.draw(
+            4,
+            SpacedColumns(vec![
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(SpacedRows(vec![])),
+                ),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(SpacedRows(vec![])),
+                ),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(SpacedRows(vec![])),
+                ),
+            ]),
+        );
     }
 }
 
