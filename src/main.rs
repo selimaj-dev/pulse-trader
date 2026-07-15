@@ -3,16 +3,10 @@ pub mod types;
 
 use std::any::Any;
 
+use chrono::{Local, Utc};
 use pulse_ui::{
-    App,
-    layout::{LayoutItem, layout},
-    state::{Refresh, State},
-    unit::Size,
-    widget::{
-        align::Center,
-        input::{Input, InputState},
-        outline::{Outline, VLine},
-        spaced::SpacedColumns,
+    App, layout::{LayoutItem, layout}, state::{Refresh, State}, unit::Size, widget::{
+        align::{Center, End}, input::{Input, InputState}, outline::{Outline, VLine}, spaced::SpacedColumns,
     },
 };
 
@@ -101,6 +95,14 @@ impl App for PulseTradeApp {
             param: types::SignalParameter::STL,
             price: 118_000.0,
         });
+
+        let mut logs = self.logs.lock().await;
+
+        logs.push(EventLog {
+            kind: types::LogKind::WARN,
+            name: "pulse.init",
+            message: "We're still not done yet ;)".to_string(),
+        });
     }
 
     async fn update(&mut self, ctx: &pulse_ui::state::Context, event: Box<dyn Any + Send + Sync>) {
@@ -147,9 +149,19 @@ impl App for PulseTradeApp {
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
         layout.draw_frame(0, Outline);
-        layout.draw(0, format!("   PULSE TRADER v{}", env!("CARGO_PKG_VERSION")));
-        layout.draw(1, Center("LIVE".to_string()));
-        layout.draw(2, Center(format!("14:32:51 UTC")));
+        layout.draw(
+            0,
+            format!("   PULSE TRADER v{}", env!("CARGO_PKG_VERSION")),
+        );
+        // layout.draw(1, Center("LIVE".to_string()));
+        layout.draw(
+            2,
+            End(format!(
+                "{} UTC ({} Local)",
+                Utc::now().format("%H:%M"),
+                Local::now().format("%H:%M")
+            )),
+        );
         layout.draw_frame(3, VLine);
         layout.draw_frame(4, VLine);
         layout.draw_frame(5, VLine);
