@@ -1,4 +1,4 @@
-use std::any::Any;
+use std::{any::Any, time::Duration};
 
 use tokio::sync::mpsc;
 
@@ -38,10 +38,12 @@ pub async fn run<A: App>(create_app: impl FnOnce(&state::Context) -> A) {
     crossterm::terminal::enable_raw_mode().unwrap();
 
     tokio::spawn(async move {
-        loop {
-            tx.send(Box::new(crossterm::event::read().unwrap()))
-                .await
-                .unwrap();
+        while !tx.is_closed() {
+            if crossterm::event::poll(Duration::from_millis(100)).unwrap() {
+                tx.send(Box::new(crossterm::event::read().unwrap()))
+                    .await
+                    .unwrap();
+            }
         }
     });
 

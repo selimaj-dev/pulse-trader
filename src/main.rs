@@ -21,6 +21,10 @@ impl App for PulseTradeApp {
         }
 
         *self.count.lock().await += 1;
+
+        if *self.count.lock().await > 10 {
+            ctx.close().await;
+        }
     }
 
     async fn layout(&self) -> pulse_ui::layout::LayoutItem {
