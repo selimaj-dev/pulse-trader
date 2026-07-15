@@ -1,3 +1,53 @@
+#[cfg(target_os = "macos")]
+mod platform {
+    use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+
+    pub fn is_backspace(event: &KeyEvent) -> bool {
+        matches!(event.code, KeyCode::Backspace)
+            || matches!(
+                event,
+                KeyEvent {
+                    code: KeyCode::Char('h'),
+                    modifiers,
+                    ..
+                } if modifiers.contains(KeyModifiers::CONTROL)
+            )
+    }
+
+    pub fn is_delete(event: &KeyEvent) -> bool {
+        matches!(event.code, KeyCode::Delete)
+            || matches!(
+                event,
+                KeyEvent {
+                    code: KeyCode::Char('d'),
+                    modifiers,
+                    ..
+                } if modifiers.contains(KeyModifiers::CONTROL)
+            )
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+mod platform {
+    use crossterm::event::{KeyCode, KeyEvent};
+
+    pub fn is_backspace(event: &KeyEvent) -> bool {
+        matches!(event.code, KeyCode::Backspace)
+            || matches!(
+                event,
+                KeyEvent {
+                    code: KeyCode::Char('h'),
+                    modifiers,
+                    ..
+                } if modifiers.contains(KeyModifiers::CONTROL)
+            )
+    }
+
+    pub fn is_delete(event: &KeyEvent) -> bool {
+        matches!(event.code, KeyCode::Delete)
+    }
+}
+
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 use crate::widget::Widget;
@@ -35,6 +85,34 @@ impl<'a> Widget for Input<'a> {
 impl InputState {
     pub fn handle_event(&mut self, event: &Event) -> bool {
         match event {
+            Event::Key(key) if platform::is_backspace(key) => {
+                if self.cursor > 0 {
+                    let prev = self.text[..self.cursor]
+                        .char_indices()
+                        .last()
+                        .map(|(i, _)| i)
+                        .unwrap();
+
+                    self.text.remove(prev);
+                    self.cursor = prev;
+                }
+                true
+            }
+
+            Event::Key(key) if platform::is_delete(key) => {
+                if self.cursor < self.text.len() {
+                    let prev = self.text[..self.cursor + 1]
+                        .char_indices()
+                        .last()
+                        .map(|(i, _)| i)
+                        .unwrap();
+
+                    self.text.remove(prev);
+                    self.cursor = prev;
+                }
+                true
+            }
+
             Event::Key(KeyEvent {
                 code: KeyCode::Left,
                 ..
@@ -51,76 +129,6 @@ impl InputState {
             }) => {
                 if self.cursor < self.text.len() {
                     self.cursor += 1;
-                }
-                true
-            }
-
-            Event::Key(KeyEvent {
-                code: KeyCode::Backspace,
-                ..
-            }) => {
-                if self.cursor > 0 {
-                    let prev = self.text[..self.cursor]
-                        .char_indices()
-                        .last()
-                        .map(|(i, _)| i)
-                        .unwrap();
-
-                    self.text.remove(prev);
-                    self.cursor = prev;
-                }
-                true
-            }
-
-            Event::Key(KeyEvent {
-                code: KeyCode::Char('h'),
-                modifiers,
-                ..
-            }) if modifiers.contains(KeyModifiers::CONTROL) => {
-                if self.cursor > 0 {
-                    let prev = self.text[..self.cursor]
-                        .char_indices()
-                        .last()
-                        .map(|(i, _)| i)
-                        .unwrap();
-
-                    self.text.remove(prev);
-                    self.cursor = prev;
-                }
-                true
-            }
-
-            Event::Key(KeyEvent {
-                code: KeyCode::Delete,
-                ..
-            }) => {
-                if self.cursor < self.text.len() {
-                    let prev = self.text[..self.cursor + 1]
-                        .char_indices()
-                        .last()
-                        .map(|(i, _)| i)
-                        .unwrap();
-
-                    self.text.remove(prev);
-                    self.cursor = prev;
-                }
-                true
-            }
-
-            Event::Key(KeyEvent {
-                code: KeyCode::Char('d'),
-                modifiers,
-                ..
-            }) if modifiers.contains(KeyModifiers::CONTROL) => {
-                if self.cursor < self.text.len() {
-                    let prev = self.text[..self.cursor + 1]
-                        .char_indices()
-                        .last()
-                        .map(|(i, _)| i)
-                        .unwrap();
-
-                    self.text.remove(prev);
-                    self.cursor = prev;
                 }
                 true
             }
