@@ -13,13 +13,16 @@ use pulse_ui::{
         align::End,
         input::{Input, InputState},
         outline::{Outline, VLine},
-        spaced::{SpacedColumns, SpacedColumns2, SpacedRows2},
+        spaced::SpacedColumns,
     },
 };
 
 use crate::{
     formatting::{Formatted, apply_padding},
-    types::{ActivePosition, Alert, EventLog, MarketOverview, Signal, Status, WatchListItem},
+    types::{
+        ActivePosition, Alert, EventLog, InspectTarget, MarketOverview, Signal, Status,
+        WatchListItem,
+    },
 };
 
 pub struct PulseTradeApp {
@@ -30,6 +33,7 @@ pub struct PulseTradeApp {
     signals: State<Vec<Signal>>,
     market_overview: State<MarketOverview>,
     status: State<Status>,
+    inspect: State<InspectTarget>,
 }
 
 impl App for PulseTradeApp {
@@ -232,7 +236,10 @@ impl App for PulseTradeApp {
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(vec![" INSPECTOR"].join("\n")),
+                    Box::new(format!(
+                        " INSPECTOR\n{}",
+                        apply_padding(self.inspect.lock().await.get_formatted()).join("\n")
+                    )),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
@@ -264,6 +271,7 @@ async fn main() {
         active_positions: ctx.use_state(Vec::new()),
         signals: ctx.use_state(Vec::new()),
         logs: ctx.use_state(Vec::new()),
+        inspect: ctx.use_state(InspectTarget::None),
         market_overview: ctx.use_state(MarketOverview {
             trend: types::MarketTrend::Bullish,
             volatility: types::Volatility::High,

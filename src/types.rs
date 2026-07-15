@@ -95,3 +95,38 @@ pub struct Alert {
     pub level: AlertLevel,
     pub message: String,
 }
+
+#[derive(Debug, Clone)]
+pub enum InspectTarget {
+    None,
+
+    Symbol {
+        symbol: String,
+        price: f64,
+        trend: f64,
+
+        market_trend: MarketTrend,
+        volatility: Volatility,
+        pressure: f64,
+
+        alerts: Vec<Alert>,
+    },
+
+    Position {
+        symbol: String,
+        profit: f64,
+        amount: f64,
+    },
+
+    Signal {
+        kind: SignalKind,
+        symbol: String,
+        param: SignalParameter,
+        price: f64,
+    },
+
+    Alert {
+        level: AlertLevel,
+        message: String,
+    },
+}

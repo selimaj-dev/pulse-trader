@@ -1,10 +1,67 @@
 use crate::types::{
-    ActivePosition, Alert, AlertLevel, EventLog, LogKind, MarketOverview, Signal, SignalKind,
-    Status, WatchListItem,
+    ActivePosition, Alert, AlertLevel, EventLog, InspectTarget, LogKind, MarketOverview, Signal,
+    SignalKind, Status, WatchListItem,
 };
 
 pub trait Formatted {
     fn get_formatted(&self) -> Vec<String>;
+}
+
+impl Formatted for InspectTarget {
+    fn get_formatted(&self) -> Vec<String> {
+        match self {
+            Self::None => vec!["\x1b[2mnothing to inspect\x1b[0m".to_string()],
+
+            Self::Symbol {
+                symbol,
+                price,
+                trend,
+                market_trend,
+                volatility,
+                pressure,
+                alerts,
+            } => vec![
+                Property("Symbol", format!("\x1b[35m{}\x1b[0m", symbol)),
+                Property("Price", format!("\x1b[96m{}\x1b[0m", format_f64(*price))),
+                Property("Trend", format!("{}", format_f64(*trend))),
+                Property("Market", format!("{:?}", market_trend)),
+                Property("Volatility", format!("{:?}", volatility)),
+                Property("Pressure", format!("{:+.2}%", pressure * 100.0)),
+                Property("Alerts", format!("{}", alerts.len())),
+            ]
+            .get_formatted(),
+
+            Self::Position {
+                symbol,
+                profit,
+                amount,
+            } => vec![
+                Property("Symbol", format!("\x1b[35m{}\x1b[0m", symbol)),
+                Property("Profit", format!("{:+.2}", profit)),
+                Property("Amount", format!("{}", amount)),
+            ]
+            .get_formatted(),
+
+            Self::Signal {
+                kind,
+                symbol,
+                param,
+                price,
+            } => vec![
+                Property("Type", format!("{:?}", kind)),
+                Property("Symbol", format!("\x1b[35m{}\x1b[0m", symbol)),
+                Property("Parameter", format!("{:?}", param)),
+                Property("Price", format!("\x1b[96m{}\x1b[0m", format_f64(*price))),
+            ]
+            .get_formatted(),
+
+            Self::Alert { level, message } => vec![
+                Property("Level", format!("{:?}", level)),
+                Property("Message", message.clone()),
+            ]
+            .get_formatted(),
+        }
+    }
 }
 
 impl Formatted for Alert {
