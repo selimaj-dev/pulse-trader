@@ -1,3 +1,5 @@
+pub mod types;
+
 use std::any::Any;
 
 use pulse_ui::{
@@ -13,12 +15,38 @@ use pulse_ui::{
     },
 };
 
+use crate::types::{Formatted, WatchListItem, space_out};
+
 pub struct PulseTradeApp {
     command: State<InputState>,
+    watch_list: State<Vec<WatchListItem>>,
 }
 
 impl App for PulseTradeApp {
-    async fn init(&mut self, ctx: &pulse_ui::state::Context) {}
+    async fn init(&mut self, ctx: &pulse_ui::state::Context) {
+        let mut watch_list = self.watch_list.lock().await;
+
+        watch_list.push(WatchListItem {
+            symbol: "BTC".to_string(),
+            price: 118_402.12,
+            trend: 0.82,
+        });
+        watch_list.push(WatchListItem {
+            symbol: "ETH".to_string(),
+            price: 3_912.48,
+            trend: 0.41,
+        });
+        watch_list.push(WatchListItem {
+            symbol: "SOL".to_string(),
+            price: 182.91,
+            trend: 2.18,
+        });
+        watch_list.push(WatchListItem {
+            symbol: "XRP".to_string(),
+            price: 2.84,
+            trend: 1.22,
+        });
+    }
 
     async fn update(&mut self, ctx: &pulse_ui::state::Context, event: Box<dyn Any + Send + Sync>) {
         if let Some(Refresh) = event.downcast_ref() {
@@ -77,16 +105,10 @@ impl App for PulseTradeApp {
             SpacedColumns(vec![
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(
-                        vec![
-                            " WATCHLIST",
-                            " BTC  118,402.12  ▲ 0.82%",
-                            " ETH    3,912.48  ▼ 0.41%",
-                            " SOL      182.91  ▲ 2.18%",
-                            " XRP        2.84  ▲ 1.22%",
-                        ]
-                        .join("\n"),
-                    ),
+                    Box::new(format!(
+                        " WATCHLIST\n{}",
+                        space_out(self.watch_list.lock().await.get_formatted()).join("\n")
+                    )),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
@@ -129,7 +151,8 @@ impl App for PulseTradeApp {
                         vec![
                             " SIGNALS",
                             " BUY  BTC  LIM 118,800.12",
-                            " STL  BTC  120,00.00",
+                            " BUY  BTC  STL 118,000.00",
+                            " BUY  BTC  TAP 120,000.00",
                         ]
                         .join("\n"),
                     ),
@@ -150,7 +173,7 @@ impl App for PulseTradeApp {
             ]),
         );
 
-        layout.draw(6, Input("> ", &*self.command.lock().await));
+        layout.draw(6, Input(" > ", &*self.command.lock().await));
     }
 }
 
@@ -158,6 +181,7 @@ impl App for PulseTradeApp {
 async fn main() {
     pulse_ui::run(|ctx| PulseTradeApp {
         command: ctx.use_state(InputState::new()),
+        watch_list: ctx.use_state(Vec::new()),
     })
     .await;
 }
