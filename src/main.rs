@@ -18,13 +18,14 @@ use pulse_ui::{
 
 use crate::{
     formatting::{Formatted, apply_padding},
-    types::{Account, ActivePosition, Signal, System, WatchListItem},
+    types::{Account, ActivePosition, EventLog, Signal, System, WatchListItem},
 };
 
 pub struct PulseTradeApp {
     command: State<InputState>,
     watch_list: State<Vec<WatchListItem>>,
     active_positions: State<Vec<ActivePosition>>,
+    logs: State<Vec<EventLog>>,
     signals: State<Vec<Signal>>,
     account: State<Account>,
     system: State<System>,
@@ -193,8 +194,7 @@ impl App for PulseTradeApp {
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(format!(
                         " SIGNALS\n{}",
-                        apply_padding(self.signals.lock().await.get_formatted())
-                            .join("\n")
+                        apply_padding(self.signals.lock().await.get_formatted()).join("\n")
                     )),
                 ),
                 (
@@ -205,6 +205,11 @@ impl App for PulseTradeApp {
                     ]),
                 ),
             ]),
+        );
+
+        layout.draw(
+            5,
+            apply_padding(self.logs.lock().await.get_formatted()).join("\n"),
         );
 
         layout.draw(6, Input(" > ", &*self.command.lock().await));
@@ -218,6 +223,7 @@ async fn main() {
         watch_list: ctx.use_state(Vec::new()),
         active_positions: ctx.use_state(Vec::new()),
         signals: ctx.use_state(Vec::new()),
+        logs: ctx.use_state(Vec::new()),
         account: ctx.use_state(Account {
             equity: 25_483.21,
             liquid: 11_928.43,

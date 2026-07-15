@@ -53,3 +53,18 @@ pub struct Signal {
     pub param: SignalParameter,
     pub price: f64,
 }
+
+#[derive(Debug, Clone, Copy)]
+pub enum LogKind {
+    INFO,
+    WARN,
+    ERR,
+    DEBUG,
+}
+
+#[derive(Debug, Clone)]
+pub struct EventLog {
+    pub kind: LogKind,
+    pub name: &'static str,
+    pub message: String,
+}

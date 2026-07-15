@@ -1,7 +1,28 @@
-use crate::types::{Account, ActivePosition, Signal, SignalKind, System, WatchListItem};
+use crate::types::{
+    Account, ActivePosition, EventLog, LogKind, Signal, SignalKind, System, WatchListItem,
+};
 
 pub trait Formatted {
     fn get_formatted(&self) -> Vec<String>;
+}
+
+impl Formatted for EventLog {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            format!(
+                "{}{:?}\x1b[0m",
+                match &self.kind {
+                    LogKind::INFO => "\x1b[34m",
+                    LogKind::DEBUG => "\x1b[36m",
+                    LogKind::ERR => "\x1b[31m",
+                    LogKind::WARN => "\x1b[33m",
+                },
+                self.kind
+            ),
+            format!("(\x1b[37m{}\x1b[0m)", self.name),
+            self.message.clone(),
+        ]
+    }
 }
 
 impl Formatted for Signal {
