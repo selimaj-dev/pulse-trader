@@ -37,9 +37,19 @@ pub struct SpacedColumns(pub Vec<(LayoutItem, Box<dyn Widget>)>);
 
 impl Widget for SpacedColumns {
     fn render(&self, scope: &mut crate::render::RenderScope) {
+        let mut items = Vec::new();
+
+        for (i, (item, _)) in self.0.iter().enumerate() {
+            if i > 0 {
+                items.push(LayoutItem::Spacing(crate::unit::Size::Fixed(1)))
+            }
+
+            items.push(item.clone());
+        }
+
         let mut alloc = scope.rect.allocate(&crate::layout::LayoutItem::Columns {
             unit: Percent(100),
-            items: self.0.iter().map(|v| v.0.clone()).collect(),
+            items,
         });
 
         for i in 0..alloc.widgets.len() {
@@ -49,10 +59,8 @@ impl Widget for SpacedColumns {
                 let rect = &mut alloc.widgets[i];
 
                 for i in 0..rect.height {
-                    scope.draw_text((rect.x - 1, i), "│");
+                    scope.draw_text((rect.x - 2, i), "│");
                 }
-                rect.x += 1;
-                rect.width -= 1;
             }
 
             alloc.draw(i, &*item.1);

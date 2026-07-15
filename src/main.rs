@@ -1,11 +1,7 @@
 use std::any::Any;
 
 use pulse_ui::{
-    App,
-    layout::{LayoutItem, layout},
-    state::{Refresh, State},
-    unit::Size,
-    widget::{outline::Outline, spaced::SpacedRows},
+    App, layout::{LayoutItem, layout}, state::{Refresh, State}, unit::Size, widget::{outline::Outline, spaced::{SpacedColumns, SpacedRows}},
 };
 
 pub struct PulseTradeApp {
@@ -39,7 +35,7 @@ impl App for PulseTradeApp {
 
         layout.draw(
             0,
-            SpacedRows(vec![
+            SpacedColumns(vec![
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("one")),
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("two")),
                 (LayoutItem::Widget(Size::Flex(1)), Box::new("three")),
