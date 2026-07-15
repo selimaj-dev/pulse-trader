@@ -1,4 +1,4 @@
-use crate::types::{Account, ActivePosition, WatchListItem};
+use crate::types::{Account, ActivePosition, System, WatchListItem};
 
 pub trait Formatted {
     fn get_formatted(&self) -> Vec<String>;
@@ -50,6 +50,18 @@ impl Formatted for Account {
             Property("Unreal", format_f64(self.unreal)),
             Property("Realized", format_f64(self.realized)),
             Property("Margin", format_f64(self.margin)),
+        ]
+        .get_formatted()
+    }
+}
+
+impl Formatted for System {
+    fn get_formatted(&self) -> Vec<String> {
+        vec![
+            Property("Feed", format!("{:?}", self.feed)),
+            Property("Exchange", self.exchange.clone()),
+            Property("DEX", self.dex.clone()),
+            Property("Latency", format!("{} ms", self.latency)),
         ]
         .get_formatted()
     }

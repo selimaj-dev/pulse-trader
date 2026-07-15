@@ -18,7 +18,7 @@ use pulse_ui::{
 
 use crate::{
     formatting::{Formatted, apply_padding},
-    types::{Account, ActivePosition, WatchListItem},
+    types::{Account, ActivePosition, System, WatchListItem},
 };
 
 pub struct PulseTradeApp {
@@ -26,6 +26,7 @@ pub struct PulseTradeApp {
     watch_list: State<Vec<WatchListItem>>,
     active_positions: State<Vec<ActivePosition>>,
     account: State<Account>,
+    system: State<System>,
 }
 
 impl App for PulseTradeApp {
@@ -178,16 +179,10 @@ impl App for PulseTradeApp {
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(
-                        vec![
-                            " SYSTEM",
-                            " Feed:      Connected",
-                            " Exchange:  Binance",
-                            " DEX:       DEX SCREENER",
-                            " Latency:   18 ms",
-                        ]
-                        .join("\n"),
-                    ),
+                    Box::new(format![
+                        " SYSTEM\n{}",
+                        apply_padding(self.system.lock().await.get_formatted()).join("\n")
+                        ]),
                 ),
             ]),
         );
@@ -208,6 +203,12 @@ async fn main() {
             unreal: 483.12,
             realized: 2_182.49,
             margin: 0.0,
+        }),
+        system: ctx.use_state(System {
+            feed: types::Feed::Connected,
+            exchange: "Binance".to_string(),
+            dex: "DEX SCREENER".to_string(),
+            latency: 18,
         }),
     })
     .await;
