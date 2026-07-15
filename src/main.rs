@@ -147,7 +147,7 @@ impl App for PulseTradeApp {
 
     async fn render(&mut self, layout: pulse_ui::layout::Allocation) {
         layout.draw_frame(0, Outline);
-        layout.draw(0, format!(" PULSE TRADER v0.1.0"));
+        layout.draw(0, format!("   PULSE TRADER v{}", env!("CARGO_PKG_VERSION")));
         layout.draw(1, Center("LIVE".to_string()));
         layout.draw(2, Center(format!("14:32:51 UTC")));
         layout.draw_frame(3, VLine);

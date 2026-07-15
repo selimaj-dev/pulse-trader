@@ -22,7 +22,12 @@ pub struct Input<'a>(pub &'a str, pub &'a InputState);
 impl<'a> Widget for Input<'a> {
     fn render(&self, scope: &mut crate::render::RenderScope) {
         let mut text = self.1.text.clone();
-        text.insert_str(self.1.cursor, "❘");
+        if self.1.cursor == text.len() {
+            text.insert_str(self.1.cursor, "\x1b[47m \x1b[0m");
+        } else {
+            text.insert_str(self.1.cursor + 1, "\x1b[0m");
+            text.insert_str(self.1.cursor, "\x1b[47m\x1b[30m");
+        }
         scope.draw_text(0, format!("{}{text}", self.0));
     }
 }
@@ -90,7 +95,25 @@ impl InputState {
                 ..
             }) => {
                 if self.cursor < self.text.len() {
-                    let prev = self.text[..self.cursor+1]
+                    let prev = self.text[..self.cursor + 1]
+                        .char_indices()
+                        .last()
+                        .map(|(i, _)| i)
+                        .unwrap();
+
+                    self.text.remove(prev);
+                    self.cursor = prev;
+                }
+                true
+            }
+
+            Event::Key(KeyEvent {
+                code: KeyCode::Char('d'),
+                modifiers,
+                ..
+            }) if modifiers.contains(KeyModifiers::CONTROL) => {
+                if self.cursor < self.text.len() {
+                    let prev = self.text[..self.cursor + 1]
                         .char_indices()
                         .last()
                         .map(|(i, _)| i)
