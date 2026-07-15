@@ -10,13 +10,7 @@ pub struct ActivePosition {
     pub amount: f64,
 }
 
-pub struct Account {
-    pub equity: f64,
-    pub liquid: f64,
-    pub unreal: f64,
-    pub realized: f64,
-    pub margin: f64,
-}
+pub struct MarketOverview {}
 
 #[derive(Debug, Clone, Copy)]
 pub enum Feed {
@@ -26,7 +20,7 @@ pub enum Feed {
     Failed,
 }
 
-pub struct System {
+pub struct Status {
     pub feed: Feed,
     pub exchange: String,
     pub dex: String,

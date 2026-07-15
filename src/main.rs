@@ -5,14 +5,21 @@ use std::any::Any;
 
 use chrono::{Local, Utc};
 use pulse_ui::{
-    App, layout::{LayoutItem, layout}, state::{Refresh, State}, unit::Size, widget::{
-        align::{Center, End}, input::{Input, InputState}, outline::{Outline, VLine}, spaced::SpacedColumns,
+    App,
+    layout::{LayoutItem, layout},
+    state::{Refresh, State},
+    unit::Size,
+    widget::{
+        align::End,
+        input::{Input, InputState},
+        outline::{Outline, VLine},
+        spaced::SpacedColumns,
     },
 };
 
 use crate::{
     formatting::{Formatted, apply_padding},
-    types::{Account, ActivePosition, EventLog, Signal, System, WatchListItem},
+    types::{ActivePosition, EventLog, MarketOverview, Signal, Status, WatchListItem},
 };
 
 pub struct PulseTradeApp {
@@ -21,8 +28,8 @@ pub struct PulseTradeApp {
     active_positions: State<Vec<ActivePosition>>,
     logs: State<Vec<EventLog>>,
     signals: State<Vec<Signal>>,
-    account: State<Account>,
-    system: State<System>,
+    market_overview: State<MarketOverview>,
+    status: State<Status>,
 }
 
 impl App for PulseTradeApp {
@@ -188,8 +195,8 @@ impl App for PulseTradeApp {
                 (
                     LayoutItem::Widget(Size::Flex(1)),
                     Box::new(format![
-                        " ACCOUNT\n{}",
-                        apply_padding(self.account.lock().await.get_formatted()).join("\n")
+                        " MARKET OVERVIEW\n{}",
+                        apply_padding(self.market_overview.lock().await.get_formatted()).join("\n")
                     ]),
                 ),
             ]),
@@ -200,10 +207,6 @@ impl App for PulseTradeApp {
             SpacedColumns(vec![
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(vec![" ACTIVE STRATEGIES"].join("\n")),
-                ),
-                (
-                    LayoutItem::Widget(Size::Flex(1)),
                     Box::new(format!(
                         " SIGNALS\n{}",
                         apply_padding(self.signals.lock().await.get_formatted()).join("\n")
@@ -211,9 +214,13 @@ impl App for PulseTradeApp {
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(vec![" INSPECTOR"].join("\n")),
+                ),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
                     Box::new(format![
-                        " SYSTEM\n{}",
-                        apply_padding(self.system.lock().await.get_formatted()).join("\n")
+                        " STATUS\n{}",
+                        apply_padding(self.status.lock().await.get_formatted()).join("\n")
                     ]),
                 ),
             ]),
@@ -239,14 +246,8 @@ async fn main() {
         active_positions: ctx.use_state(Vec::new()),
         signals: ctx.use_state(Vec::new()),
         logs: ctx.use_state(Vec::new()),
-        account: ctx.use_state(Account {
-            equity: 25_483.21,
-            liquid: 11_928.43,
-            unreal: 483.12,
-            realized: 2_182.49,
-            margin: 0.0,
-        }),
-        system: ctx.use_state(System {
+        market_overview: ctx.use_state(MarketOverview {}),
+        status: ctx.use_state(Status {
             feed: types::Feed::Connected,
             exchange: "Binance".to_string(),
             dex: "DEX SCREENER".to_string(),

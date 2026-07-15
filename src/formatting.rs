@@ -1,5 +1,5 @@
 use crate::types::{
-    Account, ActivePosition, EventLog, LogKind, Signal, SignalKind, System, WatchListItem,
+    ActivePosition, EventLog, LogKind, MarketOverview, Signal, SignalKind, Status, WatchListItem,
 };
 
 pub trait Formatted {
@@ -78,20 +78,13 @@ impl Formatted for ActivePosition {
 
 pub struct Property(&'static str, String);
 
-impl Formatted for Account {
+impl Formatted for MarketOverview {
     fn get_formatted(&self) -> Vec<String> {
-        vec![
-            Property("Equity", format_f64(self.equity)),
-            Property("Liquid", format_f64(self.liquid)),
-            Property("Unreal", format_f64(self.unreal)),
-            Property("Realized", format_f64(self.realized)),
-            Property("Margin", format_f64(self.margin)),
-        ]
-        .get_formatted()
+        vec![Property("Equity", format_f64(1.0))].get_formatted()
     }
 }
 
-impl Formatted for System {
+impl Formatted for Status {
     fn get_formatted(&self) -> Vec<String> {
         vec![
             Property("Feed", format!("{:?}", self.feed)),
