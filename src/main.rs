@@ -111,7 +111,7 @@ impl App for PulseTradeApp {
                 LayoutItem::Widget(Size::Flex(1)),
                 // Event logs
                 LayoutItem::Spacing(Size::Fixed(1)),
-                LayoutItem::Widget(Size::Flex(1)),
+                LayoutItem::Widget(Size::Fill),
                 // Input
                 LayoutItem::Spacing(Size::Fixed(1)),
                 LayoutItem::Widget(Size::Fixed(1)),
