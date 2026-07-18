@@ -29,7 +29,7 @@ mod platform {
 
 #[cfg(not(target_os = "macos"))]
 mod platform {
-    use crossterm::event::{KeyCode, KeyEvent};
+    use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
     pub fn is_backspace(event: &KeyEvent) -> bool {
         matches!(event.code, KeyCode::Backspace)
