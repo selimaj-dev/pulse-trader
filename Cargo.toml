@@ -16,3 +16,11 @@ members = ["pulse-ui"]
 pulse-ui = { path = "pulse-ui", version = "0.1.0-alpha.0" }
 tokio = "1.52.3"
 crossterm = "0.29.0"
+
+[[bin]]
+name = "pulse-trader"
+path = "src/terminal/main.rs"
+
+[[bin]]
+name = "pulse-trader-daemon"
+path = "src/daemon/main.rs"
