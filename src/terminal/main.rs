@@ -1,6 +1,6 @@
 pub mod command;
 pub mod formatting;
-pub mod types;
+pub mod ptc;
 
 use std::any::Any;
 
@@ -20,7 +20,7 @@ use pulse_ui::{
 
 use crate::{
     formatting::{Formatted, apply_padding},
-    types::{
+    ptc::{
         ActivePosition, Alert, EventLog, InspectTarget, MarketOverview, Signal, Status,
         WatchListItem,
     },
@@ -88,30 +88,30 @@ impl App for PulseTradeApp {
         let mut signals = self.signals.lock().await;
 
         signals.push(Signal {
-            kind: types::SignalKind::Buy,
+            kind: ptc::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::Lim,
+            param: ptc::SignalParameter::Lim,
             price: 118_800.0,
         });
 
         signals.push(Signal {
-            kind: types::SignalKind::Buy,
+            kind: ptc::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::Tap,
+            param: ptc::SignalParameter::Tap,
             price: 120_000.0,
         });
 
         signals.push(Signal {
-            kind: types::SignalKind::Buy,
+            kind: ptc::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: types::SignalParameter::Stl,
+            param: ptc::SignalParameter::Stl,
             price: 118_000.0,
         });
 
         let mut logs = self.logs.lock().await;
 
         logs.push(EventLog {
-            kind: types::LogKind::Warn,
+            kind: ptc::LogKind::Warn,
             name: "pulse.init",
             message: "We're still not done yet ;)".to_string(),
         });
@@ -119,17 +119,17 @@ impl App for PulseTradeApp {
         let mut market_overview = self.market_overview.lock().await;
 
         market_overview.alerts.push(Alert {
-            level: types::AlertLevel::High,
+            level: ptc::AlertLevel::High,
             message: "BTC funding rate elevated".to_string(),
         });
 
         market_overview.alerts.push(Alert {
-            level: types::AlertLevel::Medium,
+            level: ptc::AlertLevel::Medium,
             message: "Market volatility increasing".to_string(),
         });
 
         market_overview.alerts.push(Alert {
-            level: types::AlertLevel::Low,
+            level: ptc::AlertLevel::Low,
             message: "ETH volatility returning to normal".to_string(),
         });
     }
@@ -282,13 +282,13 @@ async fn main() {
         logs: ctx.use_state(Vec::new()),
         inspect: ctx.use_state(InspectTarget::None),
         market_overview: ctx.use_state(MarketOverview {
-            trend: types::MarketTrend::Bullish,
-            volatility: types::Volatility::High,
+            trend: ptc::MarketTrend::Bullish,
+            volatility: ptc::Volatility::High,
             pressure: 0.324,
             alerts: Vec::new(),
         }),
         status: ctx.use_state(Status {
-            feed: types::Feed::Connected,
+            feed: ptc::Feed::Connected,
             exchange: "Binance".to_string(),
             dex: "DEX SCREENER".to_string(),
             latency: 18,
