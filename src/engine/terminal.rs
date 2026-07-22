@@ -82,6 +82,9 @@ impl TerminalServer {
             if let Err(e) = clients[i].write(&msg).await {
                 clients.remove(i);
                 println!("{e:?}");
+            } else if let Err(e) = clients[i].flush().await {
+                clients.remove(i);
+                println!("{e:?}");
             }
         }
 

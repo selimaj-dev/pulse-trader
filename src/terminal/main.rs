@@ -22,7 +22,7 @@ use pulse_ui::{
 use crate::formatting::{Formatted, apply_padding};
 
 use pulse_wire::terminal::{
-    ActivePosition, Alert, EventLog, InspectTarget, MarketOverview, Signal, Status, WatchListItem,
+    ActivePosition, EventLog, InspectTarget, MarketOverview, Signal, Status, WatchListItem,
 };
 
 pub struct PulseTradeApp {
@@ -38,101 +38,7 @@ pub struct PulseTradeApp {
 }
 
 impl App for PulseTradeApp {
-    async fn init(&mut self, _ctx: &pulse_ui::state::Context) {
-        let mut watch_list = self.watch_list.lock().await;
-
-        watch_list.push(WatchListItem {
-            symbol: "BTC".to_string(),
-            price: 118_402.12,
-            trend: 0.82,
-        });
-        watch_list.push(WatchListItem {
-            symbol: "ETH".to_string(),
-            price: 3_912.48,
-            trend: -0.41,
-        });
-        watch_list.push(WatchListItem {
-            symbol: "SOL".to_string(),
-            price: 182.91,
-            trend: 2.18,
-        });
-        watch_list.push(WatchListItem {
-            symbol: "XRP".to_string(),
-            price: 2.84,
-            trend: 1.22,
-        });
-
-        let mut active_positions = self.active_positions.lock().await;
-
-        active_positions.push(ActivePosition {
-            symbol: "BTC".to_string(),
-            profit: 125.50,
-            amount: 0.25,
-        });
-        active_positions.push(ActivePosition {
-            symbol: "ETH".to_string(),
-            profit: -32.75,
-            amount: 1.0,
-        });
-        active_positions.push(ActivePosition {
-            symbol: "SOL".to_string(),
-            profit: 84.20,
-            amount: 5.0,
-        });
-        active_positions.push(ActivePosition {
-            symbol: "XRP".to_string(),
-            profit: 12.30,
-            amount: 0.75,
-        });
-
-        let mut signals = self.signals.lock().await;
-
-        signals.push(Signal {
-            kind: pulse_wire::terminal::SignalKind::Buy,
-            symbol: "BTC".to_string(),
-            param: pulse_wire::terminal::SignalParameter::Lim,
-            price: 118_800.0,
-        });
-
-        signals.push(Signal {
-            kind: pulse_wire::terminal::SignalKind::Buy,
-            symbol: "BTC".to_string(),
-            param: pulse_wire::terminal::SignalParameter::Tap,
-            price: 120_000.0,
-        });
-
-        signals.push(Signal {
-            kind: pulse_wire::terminal::SignalKind::Buy,
-            symbol: "BTC".to_string(),
-            param: pulse_wire::terminal::SignalParameter::Stl,
-            price: 118_000.0,
-        });
-
-        let mut logs = self.logs.lock().await;
-
-        logs.push(EventLog {
-            kind: pulse_wire::terminal::LogKind::Warn,
-            name: "pulse.init".to_string(),
-            message: "We're still not done yet ;)".to_string(),
-        });
-
-        let mut market_overview = self.market_overview.lock().await;
-
-        market_overview.alerts.push(Alert {
-            level: pulse_wire::terminal::AlertLevel::High,
-            message: "BTC funding rate elevated".to_string(),
-        });
-
-        market_overview.alerts.push(Alert {
-            level: pulse_wire::terminal::AlertLevel::Medium,
-            message: "Market volatility increasing".to_string(),
-        });
-
-        market_overview.alerts.push(Alert {
-            level: pulse_wire::terminal::AlertLevel::Low,
-            message: "ETH volatility returning to normal".to_string(),
-        });
-    }
+    async fn init(&mut self, _ctx: &pulse_ui::state::Context) {}
 
     async fn update(&mut self, ctx: &pulse_ui::state::Context, event: Box<dyn Any + Send + Sync>) {
         if let Some(Refresh) = event.downcast_ref() {
