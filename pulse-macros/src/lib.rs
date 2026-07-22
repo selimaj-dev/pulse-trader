@@ -44,7 +44,6 @@ fn expand_struct(mut input: ItemStruct) -> TokenStream {
 
     let field_names = fields.iter().map(|f| f.ident.as_ref().unwrap());
     let field_names2 = fields.iter().map(|f| f.ident.as_ref().unwrap());
-    let field_types = fields.iter().map(|f| &f.ty);
 
     TokenStream::from(quote! {
         #[derive(Debug, Clone)]
@@ -64,7 +63,7 @@ fn expand_struct(mut input: ItemStruct) -> TokenStream {
             fn from_com(com: &mut Vec<u8>) -> Self {
                 Self {
                     #(
-                        #field_names2: <#field_types>::from_com(com),
+                        #field_names2: PulseCom::from_com(com),
                     )*
                 }
             }
@@ -122,21 +121,18 @@ fn expand_enum(input: ItemEnum) -> TokenStream {
             },
 
             Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
-                let ty = &fields.unnamed.first().unwrap().ty;
-
                 quote! {
-                    #tag => Self::#ident(<#ty>::from_com(com)),
+                    #tag => Self::#ident(PulseCom::from_com(com)),
                 }
             }
 
             Fields::Named(fields) => {
                 let names = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
-                let tys = fields.named.iter().map(|f| &f.ty);
 
                 quote! {
                     #tag => Self::#ident {
                         #(
-                            #names: <#tys>::from_com(com),
+                            #names: PulseCom::from_com(com),
                         )*
                     },
                 }
