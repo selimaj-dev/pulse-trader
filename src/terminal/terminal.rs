@@ -36,7 +36,7 @@ impl TerminalClient {
         Ok(())
     }
 
-    pub fn use_app(&mut self, app: PulseTradeApp) -> PulseTradeApp {
+    pub fn use_app(mut self, mut app: PulseTradeApp) -> PulseTradeApp {
         let mut reader = None;
 
         std::mem::swap(&mut self.reader, &mut reader);
@@ -103,6 +103,8 @@ impl TerminalClient {
                 }
             }
         });
+
+        app.sock = Some(self);
 
         app
     }

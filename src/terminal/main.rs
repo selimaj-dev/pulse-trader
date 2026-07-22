@@ -26,6 +26,8 @@ use pulse_wire::terminal::{
 };
 
 pub struct PulseTradeApp {
+    sock: Option<terminal::TerminalClient>,
+
     command: State<InputState>,
     scroll: State<ScrollState<7>>,
     watch_list: State<Vec<WatchListItem>>,
@@ -169,16 +171,11 @@ impl App for PulseTradeApp {
 
 #[tokio::main]
 async fn main() -> tokio::io::Result<()> {
-    let mut client = terminal::TerminalClient::new().await?;
-
-    client
-        .send(pulse_wire::terminal::TerminalClientMessage::ExecuteCommand(
-            "Hello".to_string(),
-        ))
-        .await?;
+    let client = terminal::TerminalClient::new().await?;
 
     pulse_ui::run(|ctx| {
         client.use_app(PulseTradeApp {
+            sock: None,
             command: ctx.use_state(InputState::new()),
             scroll: ctx.use_state(ScrollState(1, [0; 7])),
             watch_list: ctx.use_state(Vec::new()),

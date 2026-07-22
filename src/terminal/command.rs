@@ -11,7 +11,19 @@ impl PulseTradeApp {
                 ctx.close().await;
             }
 
-            _ => {}
+            _ => {
+                if let Err(e) = self
+                    .sock
+                    .as_mut()
+                    .unwrap()
+                    .send(pulse_wire::terminal::TerminalClientMessage::ExecuteCommand(
+                        command.to_string(),
+                    ))
+                    .await
+                {
+                    eprintln!("{e}");
+                }
+            }
         }
     }
 }
