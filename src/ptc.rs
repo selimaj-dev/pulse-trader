@@ -1,22 +1,115 @@
-#[derive(Debug, Clone)]
-pub struct WatchListItem {
-    pub symbol: String,
-    pub price: f64,
-    pub trend: f64,
+use pulse_macros::p_com;
+
+#[p_com]
+struct WatchListItem {
+    symbol: String,
+    price: f64,
+    trend: f64,
 }
 
-#[derive(Debug, Clone)]
-pub struct ActivePosition {
-    pub symbol: String,
-    pub profit: f64,
-    pub amount: f64,
+#[p_com]
+struct ActivePosition {
+    symbol: String,
+    profit: f64,
+    amount: f64,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum MarketTrend {
+#[p_com]
+enum MarketTrend {
     Bullish,
     Bearish,
     Neutral,
+}
+
+#[p_com]
+enum Volatility {
+    Low,
+    Medium,
+    High,
+}
+
+#[p_com]
+struct MarketOverview {
+    trend: MarketTrend,
+    volatility: Volatility,
+    pressure: f64,
+
+    alerts: Vec<Alert>,
+}
+
+#[p_com]
+enum Feed {
+    Connected,
+    Disconnected,
+    Connecting,
+    Failed,
+}
+
+#[p_com]
+struct Status {
+    feed: Feed,
+    exchange: String,
+    dex: String,
+    latency: u16,
+}
+
+#[p_com]
+enum SignalKind {
+    Buy,
+    Sell,
+}
+
+#[p_com]
+enum SignalParameter {
+    Lim,
+    Stl,
+    Tap,
+    Chk,
+}
+
+#[p_com]
+struct Signal {
+    kind: SignalKind,
+    symbol: String,
+    param: SignalParameter,
+    price: f64,
+}
+
+#[p_com]
+enum LogKind {
+    Info,
+    Warn,
+    Err,
+    Debug,
+}
+
+#[p_com]
+struct EventLog {
+    kind: LogKind,
+    name: String,
+    message: String,
+}
+
+#[p_com]
+enum AlertLevel {
+    High,
+    Medium,
+    Low,
+}
+
+#[p_com]
+struct Alert {
+    level: AlertLevel,
+    message: String,
+}
+
+#[p_com]
+enum InspectTarget {
+    None,
+    Symbol(WatchListItem),
+    Position(ActivePosition),
+    Signal(Signal),
+    Alert(Alert),
 }
 
 impl std::fmt::Display for MarketTrend {
@@ -29,11 +122,14 @@ impl std::fmt::Display for MarketTrend {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum Volatility {
-    Low,
-    Medium,
-    High,
+impl std::fmt::Display for AlertLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::High => write!(f, "H"),
+            Self::Medium => write!(f, "M"),
+            Self::Low => write!(f, "L"),
+        }
+    }
 }
 
 impl std::fmt::Display for Volatility {
@@ -44,80 +140,6 @@ impl std::fmt::Display for Volatility {
             Self::High => write!(f, "High"),
         }
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct MarketOverview {
-    pub trend: MarketTrend,
-    pub volatility: Volatility,
-    pub pressure: f64,
-
-    pub alerts: Vec<Alert>,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum Feed {
-    Connected,
-    Disconnected,
-    Connecting,
-    Failed,
-}
-
-pub struct Status {
-    pub feed: Feed,
-    pub exchange: String,
-    pub dex: String,
-    pub latency: u16,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum SignalKind {
-    Buy,
-    Sell,
-}
-
-impl std::fmt::Display for SignalKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Buy => write!(f, "BUY"),
-            Self::Sell => write!(f, "SELL"),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum SignalParameter {
-    Lim,
-    Stl,
-    Tap,
-    Chk,
-}
-
-impl std::fmt::Display for SignalParameter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Lim => write!(f, "LIM"),
-            Self::Stl => write!(f, "STL"),
-            Self::Tap => write!(f, "TAP"),
-            Self::Chk => write!(f, "CHK"),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Signal {
-    pub kind: SignalKind,
-    pub symbol: String,
-    pub param: SignalParameter,
-    pub price: f64,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum LogKind {
-    Info,
-    Warn,
-    Err,
-    Debug,
 }
 
 impl std::fmt::Display for LogKind {
@@ -131,41 +153,22 @@ impl std::fmt::Display for LogKind {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct EventLog {
-    pub kind: LogKind,
-    pub name: &'static str,
-    pub message: String,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum AlertLevel {
-    High,
-    Medium,
-    Low,
-}
-
-impl std::fmt::Display for AlertLevel {
+impl std::fmt::Display for SignalKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::High => write!(f, "H"),
-            Self::Medium => write!(f, "M"),
-            Self::Low => write!(f, "L"),
+            Self::Buy => write!(f, "BUY"),
+            Self::Sell => write!(f, "SELL"),
         }
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Alert {
-    pub level: AlertLevel,
-    pub message: String,
-}
-
-#[derive(Debug, Clone)]
-pub enum InspectTarget {
-    None,
-    Symbol(Box<(WatchListItem, MarketOverview)>),
-    Position(ActivePosition),
-    Signal(Signal),
-    Alert(Alert),
+impl std::fmt::Display for SignalParameter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Lim => write!(f, "LIM"),
+            Self::Stl => write!(f, "STL"),
+            Self::Tap => write!(f, "TAP"),
+            Self::Chk => write!(f, "CHK"),
+        }
+    }
 }

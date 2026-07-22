@@ -112,7 +112,7 @@ impl App for PulseTradeApp {
 
         logs.push(EventLog {
             kind: ptc::LogKind::Warn,
-            name: "pulse.init",
+            name: "pulse.init".to_string(),
             message: "We're still not done yet ;)".to_string(),
         });
 

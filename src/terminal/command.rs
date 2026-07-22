@@ -20,7 +20,7 @@ impl PulseTradeApp {
             _ => {
                 self.logs.lock().await.push(EventLog {
                     kind: crate::ptc::LogKind::Err,
-                    name: "cmd",
+                    name: "cmd".to_string(),
                     message: format!("Command '{}' not found", command),
                 });
             }
