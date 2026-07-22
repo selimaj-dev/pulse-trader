@@ -1,5 +1,6 @@
 pub mod command;
 pub mod formatting;
+pub mod terminal;
 
 use std::any::Any;
 
@@ -270,26 +271,38 @@ impl App for PulseTradeApp {
 }
 
 #[tokio::main]
-async fn main() {
-    pulse_ui::run(|ctx| PulseTradeApp {
-        command: ctx.use_state(InputState::new()),
-        watch_list: ctx.use_state(Vec::new()),
-        active_positions: ctx.use_state(Vec::new()),
-        signals: ctx.use_state(Vec::new()),
-        logs: ctx.use_state(Vec::new()),
-        inspect: ctx.use_state(InspectTarget::None),
-        market_overview: ctx.use_state(MarketOverview {
-            trend: pulse_wire::terminal::MarketTrend::Bullish,
-            volatility: pulse_wire::terminal::Volatility::High,
-            pressure: 0.324,
-            alerts: Vec::new(),
-        }),
-        status: ctx.use_state(Status {
-            feed: pulse_wire::terminal::Feed::Connected,
-            exchange: "Binance".to_string(),
-            dex: "DEX SCREENER".to_string(),
-            latency: 18,
-        }),
+async fn main() -> tokio::io::Result<()> {
+    let mut client = terminal::TerminalClient::new().await?;
+
+    client
+        .send(pulse_wire::terminal::TerminalClientMessage::ExecuteCommand(
+            "Hello".to_string(),
+        ))
+        .await?;
+
+    pulse_ui::run(|ctx| {
+        client.use_app(PulseTradeApp {
+            command: ctx.use_state(InputState::new()),
+            watch_list: ctx.use_state(Vec::new()),
+            active_positions: ctx.use_state(Vec::new()),
+            signals: ctx.use_state(Vec::new()),
+            logs: ctx.use_state(Vec::new()),
+            inspect: ctx.use_state(InspectTarget::None),
+            market_overview: ctx.use_state(MarketOverview {
+                trend: pulse_wire::terminal::MarketTrend::Bullish,
+                volatility: pulse_wire::terminal::Volatility::High,
+                pressure: 0.324,
+                alerts: Vec::new(),
+            }),
+            status: ctx.use_state(Status {
+                feed: pulse_wire::terminal::Feed::Connected,
+                exchange: "Binance".to_string(),
+                dex: "DEX SCREENER".to_string(),
+                latency: 18,
+            }),
+        })
     })
     .await;
+
+    Ok(())
 }

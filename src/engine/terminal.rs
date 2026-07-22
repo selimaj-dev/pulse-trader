@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use pulse_wire::PulseWire;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -5,20 +7,22 @@ use tokio::{
         UnixListener,
         unix::{OwnedReadHalf, OwnedWriteHalf},
     },
+    sync::Mutex,
 };
 
+#[derive(Debug, Clone)]
 pub struct TerminalServer {
-    clients: Vec<OwnedWriteHalf>,
+    clients: Arc<Mutex<Vec<OwnedWriteHalf>>>,
 }
 
 impl TerminalServer {
     pub fn new() -> Self {
         Self {
-            clients: Vec::new(),
+            clients: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
-    pub async fn run(&mut self) -> tokio::io::Result<()> {
+    pub async fn run(&self) -> tokio::io::Result<()> {
         let path = pulse_wire::server_path();
 
         if path.exists() {
@@ -34,7 +38,7 @@ impl TerminalServer {
 
             let (reader, writer) = stream.into_split();
 
-            self.clients.push(writer);
+            self.clients.lock().await.push(writer);
 
             tokio::spawn(async move {
                 if let Err(err) = Self::handle_client(reader).await {
@@ -67,18 +71,18 @@ impl TerminalServer {
     }
 
     pub async fn broadcast(
-        &mut self,
+        &self,
         message: pulse_wire::terminal::TerminalServerMessage,
     ) -> tokio::io::Result<()> {
-        let mut res = Ok(());
         let msg = message.to_com();
 
-        for client in &mut self.clients {
-            if let Err(e) = client.write(&msg).await {
-                res = Err(e);
+        for i in (0..self.clients.lock().await.len()).rev() {
+            if let Err(e) = self.clients.lock().await[i].write(&msg).await {
+                self.clients.lock().await.remove(i);
+                println!("{e:?}");
             }
         }
 
-        res
+        Ok(())
     }
 }
