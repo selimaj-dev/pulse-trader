@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use pulse_wire::PulseCom;
+use pulse_wire::PulseWire;
 
 fn main() {
     let input = pulse_wire::terminal::EventLog {

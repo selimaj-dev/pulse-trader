@@ -1,11 +1,11 @@
 pub mod terminal;
 
-pub trait PulseCom {
+pub trait PulseWire {
     fn to_com(&self) -> Vec<u8>;
     fn from_com(_com: &mut Vec<u8>) -> Self;
 }
 
-impl<T: PulseCom> PulseCom for Vec<T> {
+impl<T: PulseWire> PulseWire for Vec<T> {
     fn to_com(&self) -> Vec<u8> {
         let mut vec = Vec::new();
 
@@ -33,7 +33,7 @@ impl<T: PulseCom> PulseCom for Vec<T> {
     }
 }
 
-impl PulseCom for String {
+impl PulseWire for String {
     fn to_com(&self) -> Vec<u8> {
         let bytes = self.as_bytes();
         let mut out = Vec::with_capacity(4 + bytes.len());
@@ -55,7 +55,7 @@ impl PulseCom for String {
 
 macro_rules! int_com {
     ($t:ty) => {
-        impl PulseCom for $t {
+        impl $crate::PulseWire for $t {
             fn to_com(&self) -> Vec<u8> {
                 self.to_le_bytes().to_vec()
             }

@@ -27,5 +27,5 @@ name = "pulse-trader"
 path = "src/terminal/main.rs"
 
 [[bin]]
-name = "pulse-trader-daemon"
-path = "src/daemon/main.rs"
+name = "pulse-trader-engine"
+path = "src/engine/main.rs"
