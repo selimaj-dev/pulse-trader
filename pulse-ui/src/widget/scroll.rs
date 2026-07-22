@@ -28,7 +28,7 @@ impl Widget for ScrollText {
 
 impl<const N: usize> ScrollState<N> {
     pub fn get_selected(&self, index: usize) -> &'static str {
-        if index == self.0 { "\x1b[32m" } else { "" }
+        if index == self.0 { "\x1b[4m\x1b[1m" } else { "\x1b[1m" }
     }
 
     pub fn scroll(&self, index: usize, title: String, text: String) -> ScrollText {

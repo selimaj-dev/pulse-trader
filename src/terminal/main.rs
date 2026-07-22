@@ -276,7 +276,7 @@ async fn main() -> tokio::io::Result<()> {
     pulse_ui::run(|ctx| {
         client.use_app(PulseTradeApp {
             command: ctx.use_state(InputState::new()),
-            scroll: ctx.use_state(ScrollState(0, [0; 7])),
+            scroll: ctx.use_state(ScrollState(1, [0; 7])),
             watch_list: ctx.use_state(Vec::new()),
             active_positions: ctx.use_state(Vec::new()),
             signals: ctx.use_state(Vec::new()),
