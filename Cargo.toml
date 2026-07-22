@@ -6,13 +6,23 @@ edition = "2024"
 [dependencies]
 chrono = "0.4.45"
 pulse-ui = { workspace = true }
+pulse-macros = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 crossterm = { workspace = true }
 
 [workspace]
-members = ["pulse-ui"]
+members = ["pulse-macros", "pulse-ui"]
 
 [workspace.dependencies]
+pulse-macros = { path = "pulse-macros", version = "0.1.0-alpha.0" }
 pulse-ui = { path = "pulse-ui", version = "0.1.0-alpha.0" }
 tokio = "1.52.3"
 crossterm = "0.29.0"
+
+[[bin]]
+name = "pulse-trader"
+path = "src/terminal/main.rs"
+
+[[bin]]
+name = "pulse-trader-daemon"
+path = "src/daemon/main.rs"

@@ -1,4 +1,4 @@
-use crate::types::{
+use crate::ptc::{
     ActivePosition, Alert, AlertLevel, EventLog, InspectTarget, LogKind, MarketOverview, Signal,
     SignalKind, Status, WatchListItem,
 };
@@ -12,22 +12,15 @@ impl Formatted for InspectTarget {
         match self {
             Self::None => vec!["\x1b[2mnothing to inspect\x1b[0m".to_string()],
 
-            Self::Symbol(boxed) => {
-                let (watch, overview) = &**boxed;
-                vec![
-                    Property("Symbol", format!("\x1b[35m{}\x1b[0m", watch.symbol)),
-                    Property("Price", format!("\x1b[96m{}\x1b[0m", format_f64(watch.price))),
-                    Property("Trend", format!("{}", format_f64(watch.trend))),
-                    Property("Market", format!("{}", overview.trend)),
-                    Property("Volatility", format!("{}", overview.volatility)),
-                    Property(
-                        "Pressure",
-                        format!("{:+.2}%", overview.pressure * 100.0),
-                    ),
-                    Property("Alerts", format!("{}", overview.alerts.len())),
-                ]
-                .get_formatted()
-            }
+            Self::Symbol(watch) => vec![
+                Property("Symbol", format!("\x1b[35m{}\x1b[0m", watch.symbol)),
+                Property(
+                    "Price",
+                    format!("\x1b[96m{}\x1b[0m", format_f64(watch.price)),
+                ),
+                Property("Trend", format!("{}", format_f64(watch.trend))),
+            ]
+            .get_formatted(),
 
             Self::Position(pos) => vec![
                 Property("Symbol", format!("\x1b[35m{}\x1b[0m", pos.symbol)),

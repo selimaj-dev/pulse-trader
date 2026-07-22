@@ -1,4 +1,4 @@
-use crate::{PulseTradeApp, types::EventLog};
+use crate::{PulseTradeApp, ptc::EventLog};
 
 impl PulseTradeApp {
     pub async fn execute_command(&mut self, ctx: &pulse_ui::state::Context, command: &str) {
@@ -19,8 +19,8 @@ impl PulseTradeApp {
 
             _ => {
                 self.logs.lock().await.push(EventLog {
-                    kind: crate::types::LogKind::Err,
-                    name: "cmd",
+                    kind: crate::ptc::LogKind::Err,
+                    name: "cmd".to_string(),
                     message: format!("Command '{}' not found", command),
                 });
             }

@@ -305,11 +305,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pulse-macros"
+version = "0.1.0-alpha.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "pulse-trader"
 version = "0.1.0-alpha.0"
 dependencies = [
  "chrono",
  "crossterm",
+ "pulse-macros",
  "pulse-ui",
  "tokio",
 ]
