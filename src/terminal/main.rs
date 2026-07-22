@@ -1,6 +1,5 @@
 pub mod command;
 pub mod formatting;
-pub mod ptc;
 
 use std::any::Any;
 
@@ -18,12 +17,10 @@ use pulse_ui::{
     },
 };
 
-use crate::{
-    formatting::{Formatted, apply_padding},
-    ptc::{
-        ActivePosition, Alert, EventLog, InspectTarget, MarketOverview, Signal, Status,
-        WatchListItem,
-    },
+use crate::formatting::{Formatted, apply_padding};
+
+use pulse_wire::terminal::{
+    ActivePosition, Alert, EventLog, InspectTarget, MarketOverview, Signal, Status, WatchListItem,
 };
 
 pub struct PulseTradeApp {
@@ -88,30 +85,30 @@ impl App for PulseTradeApp {
         let mut signals = self.signals.lock().await;
 
         signals.push(Signal {
-            kind: ptc::SignalKind::Buy,
+            kind: pulse_wire::terminal::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: ptc::SignalParameter::Lim,
+            param: pulse_wire::terminal::SignalParameter::Lim,
             price: 118_800.0,
         });
 
         signals.push(Signal {
-            kind: ptc::SignalKind::Buy,
+            kind: pulse_wire::terminal::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: ptc::SignalParameter::Tap,
+            param: pulse_wire::terminal::SignalParameter::Tap,
             price: 120_000.0,
         });
 
         signals.push(Signal {
-            kind: ptc::SignalKind::Buy,
+            kind: pulse_wire::terminal::SignalKind::Buy,
             symbol: "BTC".to_string(),
-            param: ptc::SignalParameter::Stl,
+            param: pulse_wire::terminal::SignalParameter::Stl,
             price: 118_000.0,
         });
 
         let mut logs = self.logs.lock().await;
 
         logs.push(EventLog {
-            kind: ptc::LogKind::Warn,
+            kind: pulse_wire::terminal::LogKind::Warn,
             name: "pulse.init".to_string(),
             message: "We're still not done yet ;)".to_string(),
         });
@@ -119,17 +116,17 @@ impl App for PulseTradeApp {
         let mut market_overview = self.market_overview.lock().await;
 
         market_overview.alerts.push(Alert {
-            level: ptc::AlertLevel::High,
+            level: pulse_wire::terminal::AlertLevel::High,
             message: "BTC funding rate elevated".to_string(),
         });
 
         market_overview.alerts.push(Alert {
-            level: ptc::AlertLevel::Medium,
+            level: pulse_wire::terminal::AlertLevel::Medium,
             message: "Market volatility increasing".to_string(),
         });
 
         market_overview.alerts.push(Alert {
-            level: ptc::AlertLevel::Low,
+            level: pulse_wire::terminal::AlertLevel::Low,
             message: "ETH volatility returning to normal".to_string(),
         });
     }
@@ -282,13 +279,13 @@ async fn main() {
         logs: ctx.use_state(Vec::new()),
         inspect: ctx.use_state(InspectTarget::None),
         market_overview: ctx.use_state(MarketOverview {
-            trend: ptc::MarketTrend::Bullish,
-            volatility: ptc::Volatility::High,
+            trend: pulse_wire::terminal::MarketTrend::Bullish,
+            volatility: pulse_wire::terminal::Volatility::High,
             pressure: 0.324,
             alerts: Vec::new(),
         }),
         status: ctx.use_state(Status {
-            feed: ptc::Feed::Connected,
+            feed: pulse_wire::terminal::Feed::Connected,
             exchange: "Binance".to_string(),
             dex: "DEX SCREENER".to_string(),
             latency: 18,

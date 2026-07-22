@@ -319,8 +319,8 @@ version = "0.1.0-alpha.0"
 dependencies = [
  "chrono",
  "crossterm",
- "pulse-macros",
  "pulse-ui",
+ "pulse-wire",
  "tokio",
 ]
 
@@ -330,6 +330,13 @@ version = "0.1.0"
 dependencies = [
  "crossterm",
  "tokio",
+]
+
+[[package]]
+name = "pulse-wire"
+version = "0.1.0-alpha.0"
+dependencies = [
+ "pulse-macros",
 ]
 
 [[package]]

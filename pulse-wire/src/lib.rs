@@ -1,3 +1,5 @@
+pub mod terminal;
+
 pub trait PulseCom {
     fn to_com(&self) -> Vec<u8>;
     fn from_com(_com: &mut Vec<u8>) -> Self;
@@ -81,25 +83,3 @@ int_com!(usize);
 
 int_com!(f64);
 int_com!(f32);
-
-#[macro_export]
-macro_rules! p_com {
-    (struct $name:ident { $($n:ident: $v:ty),* $(,)? }) => {
-        #[derive(Debug, Clone)]
-        pub struct $name { $(pub $n: $v),* }
-
-        impl PulseCom for $name {
-            fn to_com(&self) -> Vec<u8> {
-                let mut vec = Vec::new();
-                $(vec.extend(self.$n.to_com());)*
-                vec
-            }
-
-            fn from_com(com: &mut Vec<u8>) -> Self {
-                Self {
-                    $($n: <$v>::from_com(com),)*
-                }
-            }
-        }
-    };
-}

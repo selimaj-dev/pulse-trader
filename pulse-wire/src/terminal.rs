@@ -1,3 +1,4 @@
+use crate::PulseCom;
 use pulse_macros::p_com;
 
 #[p_com]

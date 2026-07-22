@@ -1,12 +1,10 @@
-pub mod ptc;
-
 use std::time::Instant;
 
-use ptc::PulseCom;
+use pulse_wire::PulseCom;
 
 fn main() {
-    let input = ptc::EventLog {
-        kind: ptc::LogKind::Warn,
+    let input = pulse_wire::terminal::EventLog {
+        kind: pulse_wire::terminal::LogKind::Warn,
         name: "Test".to_string(),
         message: "Hello, WOrld".to_string(),
     };
@@ -14,7 +12,7 @@ fn main() {
     let start = Instant::now();
 
     let mut val = input.to_com();
-    let out = ptc::EventLog::from_com(&mut val);
+    let out = pulse_wire::terminal::EventLog::from_com(&mut val);
 
     let elapsed = start.elapsed();
 

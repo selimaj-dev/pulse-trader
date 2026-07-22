@@ -1,4 +1,4 @@
-use crate::ptc::{
+use pulse_wire::terminal::{
     ActivePosition, Alert, AlertLevel, EventLog, InspectTarget, LogKind, MarketOverview, Signal,
     SignalKind, Status, WatchListItem,
 };
