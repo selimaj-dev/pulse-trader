@@ -1,22 +1,10 @@
 pub mod terminal;
 
-use std::time::Instant;
+#[tokio::main]
+async fn main() -> tokio::io::Result<()> {
+    let mut terminal_server = terminal::TerminalServer::new();
 
-use pulse_wire::PulseWire;
+    terminal_server.run().await?;
 
-fn main() {
-    let input = pulse_wire::terminal::EventLog {
-        kind: pulse_wire::terminal::LogKind::Warn,
-        name: "Test".to_string(),
-        message: "Hello, WOrld".to_string(),
-    };
-
-    let start = Instant::now();
-
-    let mut val = input.to_com();
-    let out = pulse_wire::terminal::EventLog::from_com(&mut val);
-
-    let elapsed = start.elapsed();
-
-    println!("{:?} {:?}", out, elapsed);
+    Ok(())
 }
