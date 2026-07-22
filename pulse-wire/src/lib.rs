@@ -1,4 +1,11 @@
+#[cfg(target_os = "macos")]
+use std::path::PathBuf;
+
 pub mod terminal;
+
+pub fn server_path() -> PathBuf {
+    PathBuf::from("/tmp/pulse-engine.sock")
+}
 
 pub trait PulseWire {
     fn to_com(&self) -> Vec<u8>;

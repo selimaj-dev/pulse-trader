@@ -1,3 +1,5 @@
+pub mod terminal;
+
 use std::time::Instant;
 
 use pulse_wire::PulseWire;

@@ -8,7 +8,7 @@ pulse-ui = { workspace = true }
 pulse-wire = { workspace = true }
 
 chrono = "0.4.45"
-tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "net", "fs", "io-util"] }
 crossterm = { workspace = true }
 
 [workspace]
