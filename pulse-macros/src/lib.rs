@@ -1,11 +1,23 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Fields, ItemStruct, parse_macro_input};
+use syn::{Fields, ItemEnum, ItemStruct, parse_macro_input};
 
 #[proc_macro_attribute]
 pub fn p_com(_: TokenStream, item: TokenStream) -> TokenStream {
-    let mut input = parse_macro_input!(item as ItemStruct);
+    let input = parse_macro_input!(item as syn::Item);
 
+    match input {
+        syn::Item::Struct(s) => expand_struct(s),
+        syn::Item::Enum(e) => expand_enum(e),
+        _ => {
+            return syn::Error::new_spanned(input, "p_com only supports structs and enums")
+                .to_compile_error()
+                .into();
+        }
+    }
+}
+
+fn expand_struct(mut input: ItemStruct) -> TokenStream {
     let name = &input.ident;
 
     match &mut input.fields {
@@ -54,6 +66,107 @@ pub fn p_com(_: TokenStream, item: TokenStream) -> TokenStream {
                     #(
                         #field_names2: <#field_types>::from_com(com),
                     )*
+                }
+            }
+        }
+    })
+}
+
+fn expand_enum(input: ItemEnum) -> TokenStream {
+    let name = &input.ident;
+
+    let to_com = input.variants.iter().enumerate().map(|(i, variant)| {
+        let ident = &variant.ident;
+        let tag = i as u8;
+
+        match &variant.fields {
+            Fields::Unit => quote! {
+                Self::#ident => {
+                    vec.push(#tag);
+                }
+            },
+
+            Fields::Unnamed(fields) if fields.unnamed.len() == 1 => quote! {
+                Self::#ident(v) => {
+                    vec.push(#tag);
+                    vec.extend(v.to_com());
+                }
+            },
+
+            Fields::Named(fields) => {
+                let names = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
+
+                let names2 = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
+
+                quote! {
+                    Self::#ident { #( #names ),* } => {
+                        vec.push(#tag);
+                        #( vec.extend(#names2.to_com()); )*
+                    }
+                }
+            }
+
+            _ => {
+                panic!("tuple variants with >1 field are not supported");
+            }
+        }
+    });
+
+    let from_com = input.variants.iter().enumerate().map(|(i, variant)| {
+        let ident = &variant.ident;
+        let tag = i as u8;
+
+        match &variant.fields {
+            Fields::Unit => quote! {
+                #tag => Self::#ident,
+            },
+
+            Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
+                let ty = &fields.unnamed.first().unwrap().ty;
+
+                quote! {
+                    #tag => Self::#ident(<#ty>::from_com(com)),
+                }
+            }
+
+            Fields::Named(fields) => {
+                let names = fields.named.iter().map(|f| f.ident.as_ref().unwrap());
+                let tys = fields.named.iter().map(|f| &f.ty);
+
+                quote! {
+                    #tag => Self::#ident {
+                        #(
+                            #names: <#tys>::from_com(com),
+                        )*
+                    },
+                }
+            }
+
+            _ => panic!("tuple variants with >1 field are not supported"),
+        }
+    });
+
+    TokenStream::from(quote! {
+        #[derive(Debug, Clone)]
+        #input
+
+        impl PulseCom for #name {
+            fn to_com(&self) -> Vec<u8> {
+                let mut vec = Vec::new();
+
+                match self {
+                    #( #to_com )*
+                }
+
+                vec
+            }
+
+            fn from_com(com: &mut Vec<u8>) -> Self {
+                let kind = com.remove(0);
+
+                match kind {
+                    #( #from_com )*
+                    _ => panic!("invalid {} discriminant {}", stringify!(#name), kind),
                 }
             }
         }

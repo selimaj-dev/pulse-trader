@@ -1,35 +1,35 @@
 use pulse_macros::p_com;
 
 #[p_com]
-struct WatchListItem {
+pub struct WatchListItem {
     symbol: String,
     price: f64,
     trend: f64,
 }
 
 #[p_com]
-struct ActivePosition {
+pub struct ActivePosition {
     symbol: String,
     profit: f64,
     amount: f64,
 }
 
 #[p_com]
-enum MarketTrend {
+pub enum MarketTrend {
     Bullish,
     Bearish,
     Neutral,
 }
 
 #[p_com]
-enum Volatility {
+pub enum Volatility {
     Low,
     Medium,
     High,
 }
 
 #[p_com]
-struct MarketOverview {
+pub struct MarketOverview {
     trend: MarketTrend,
     volatility: Volatility,
     pressure: f64,
@@ -38,7 +38,7 @@ struct MarketOverview {
 }
 
 #[p_com]
-enum Feed {
+pub enum Feed {
     Connected,
     Disconnected,
     Connecting,
@@ -46,7 +46,7 @@ enum Feed {
 }
 
 #[p_com]
-struct Status {
+pub struct Status {
     feed: Feed,
     exchange: String,
     dex: String,
@@ -54,13 +54,13 @@ struct Status {
 }
 
 #[p_com]
-enum SignalKind {
+pub enum SignalKind {
     Buy,
     Sell,
 }
 
 #[p_com]
-enum SignalParameter {
+pub enum SignalParameter {
     Lim,
     Stl,
     Tap,
@@ -68,7 +68,7 @@ enum SignalParameter {
 }
 
 #[p_com]
-struct Signal {
+pub struct Signal {
     kind: SignalKind,
     symbol: String,
     param: SignalParameter,
@@ -76,7 +76,7 @@ struct Signal {
 }
 
 #[p_com]
-enum LogKind {
+pub enum LogKind {
     Info,
     Warn,
     Err,
@@ -84,27 +84,27 @@ enum LogKind {
 }
 
 #[p_com]
-struct EventLog {
+pub struct EventLog {
     kind: LogKind,
     name: String,
     message: String,
 }
 
 #[p_com]
-enum AlertLevel {
+pub enum AlertLevel {
     High,
     Medium,
     Low,
 }
 
 #[p_com]
-struct Alert {
+pub struct Alert {
     level: AlertLevel,
     message: String,
 }
 
 #[p_com]
-enum InspectTarget {
+pub enum InspectTarget {
     None,
     Symbol(WatchListItem),
     Position(ActivePosition),
