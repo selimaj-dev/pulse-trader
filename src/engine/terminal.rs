@@ -50,16 +50,21 @@ impl TerminalServer {
 
     async fn handle_client(mut reader: OwnedReadHalf) -> tokio::io::Result<()> {
         let input = tokio::spawn(async move {
-            let mut buffer = [0u8; 2048];
-
             loop {
-                let size = reader.read(&mut buffer).await?;
+                let mut len_buf = [0u8; size_of::<usize>()];
+                let size = reader.read_exact(&mut len_buf).await?;
 
-                if size == 0 {
+                let len = usize::from_le_bytes(len_buf);
+
+                if size == 0 || len == 0 {
                     break;
                 }
 
-                println!("Received {} bytes", size);
+                let mut buffer = vec![0u8; len];
+
+                reader.read_exact(&mut buffer).await?;
+
+                println!("Received {} bytes", len);
             }
 
             Ok::<(), tokio::io::Error>(())
@@ -79,14 +84,23 @@ impl TerminalServer {
         let mut clients = self.clients.lock().await;
 
         for i in (0..clients.len()).rev() {
-            if let Err(e) = clients[i].write(&msg).await {
-                clients.remove(i);
-                println!("{e:?}");
-            } else if let Err(e) = clients[i].flush().await {
+            if let Err(e) = Self::send_to_client(&mut clients, i, &msg).await {
                 clients.remove(i);
                 println!("{e:?}");
             }
         }
+
+        Ok(())
+    }
+
+    pub async fn send_to_client(
+        clients: &mut tokio::sync::MutexGuard<'_, Vec<OwnedWriteHalf>>,
+        i: usize,
+        msg: &[u8],
+    ) -> tokio::io::Result<()> {
+        clients[i].write(&msg.len().to_le_bytes()).await?;
+        clients[i].write(msg).await?;
+        clients[i].flush().await?;
 
         Ok(())
     }

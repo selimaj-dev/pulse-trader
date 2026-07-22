@@ -28,7 +28,10 @@ impl TerminalClient {
         &mut self,
         message: pulse_wire::terminal::TerminalClientMessage,
     ) -> tokio::io::Result<()> {
-        self.writer.write(&message.to_com()).await?;
+        let msg = message.to_com();
+        self.writer.write(&msg.len().to_le_bytes()).await?;
+        self.writer.write(&msg).await?;
+        self.writer.flush().await?;
 
         Ok(())
     }
@@ -50,18 +53,20 @@ impl TerminalClient {
 
         tokio::spawn(async move {
             loop {
-                let mut buffer = vec![0u8; 4096];
+                let mut len_buf = [0u8; size_of::<usize>()];
+                reader
+                    .read_exact(&mut len_buf)
+                    .await
+                    .expect("Failed to get header length");
 
-                let len = reader
-                    .read(&mut buffer)
+                let len = usize::from_le_bytes(len_buf);
+
+                let mut buffer = vec![0u8; len];
+
+                reader
+                    .read_exact(&mut buffer)
                     .await
                     .expect("Failed to read socket");
-
-                if len == 0 {
-                    break;
-                }
-
-                buffer.truncate(len);
 
                 match TerminalServerMessage::from_com(&mut buffer) {
                     TerminalServerMessage::WatchListUpdated(v) => {
