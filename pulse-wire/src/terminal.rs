@@ -4,20 +4,16 @@ use pulse_macros::pwp;
 #[pwp]
 pub enum TerminalServerMessage {
     // WatchList
-    SetWatchList(Vec<WatchListItem>),
+    WatchListUpdated(Vec<WatchListItem>),
 
     // Positions
-    SetPositions(Vec<ActivePosition>),
-    AddPosition(ActivePosition),
-    RemovePosition(usize),
+    PositionsUpdated(Vec<ActivePosition>),
 
     // Overview
-    SetOverview(MarketOverview),
+    OverviewUpdated(MarketOverview),
 
     // Signals
-    SetSignals(Vec<Signal>),
-    AddSignal(Signal),
-    RemoveSignal(usize),
+    SignalsUpdated(Vec<Signal>),
 
     // Inspector
     Inspect(InspectTarget),
