@@ -14,6 +14,7 @@ use pulse_ui::{
         align::End,
         input::{Input, InputState},
         outline::{Outline, VLine},
+        scroll::{ScrollState, ScrollText},
         spaced::SpacedColumns,
     },
 };
@@ -26,6 +27,7 @@ use pulse_wire::terminal::{
 
 pub struct PulseTradeApp {
     command: State<InputState>,
+    scroll: State<ScrollState<7>>,
     watch_list: State<Vec<WatchListItem>>,
     active_positions: State<Vec<ActivePosition>>,
     logs: State<Vec<EventLog>>,
@@ -149,6 +151,14 @@ impl App for PulseTradeApp {
 
                     drop(command);
                     self.execute_command(ctx, command_text.trim()).await;
+                } else if key.code.is_up() {
+                    self.scroll.value.lock().await.up();
+                } else if key.code.is_down() {
+                    self.scroll.value.lock().await.down();
+                } else if key.code.is_back_tab() {
+                    self.scroll.value.lock().await.back_tab();
+                } else if key.code.is_tab() {
+                    self.scroll.value.lock().await.tab();
                 }
             }
         }
@@ -207,18 +217,14 @@ impl App for PulseTradeApp {
             SpacedColumns(vec![
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(format!(
-                        " WATCHLIST\n{}",
-                        apply_padding(self.watch_list.lock().await.get_formatted()).join("\n")
-                    )),
+                    Box::new(advanced_draw(&self.scroll, 0, "WATCH LIST", &self.watch_list).await),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(format!(
-                        " ACTIVE POSITIONS\n{}",
-                        apply_padding(self.active_positions.lock().await.get_formatted())
-                            .join("\n")
-                    )),
+                    Box::new(
+                        advanced_draw(&self.scroll, 1, "ACTIVE POSITIONS", &self.active_positions)
+                            .await,
+                    ),
                 ),
                 (LayoutItem::Widget(Size::Flex(1)), {
                     let mo = self.market_overview.lock().await;
@@ -236,34 +242,22 @@ impl App for PulseTradeApp {
             SpacedColumns(vec![
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(format!(
-                        " SIGNALS\n{}",
-                        apply_padding(self.signals.lock().await.get_formatted()).join("\n")
-                    )),
+                    Box::new(advanced_draw(&self.scroll, 3, "SIGNALS", &self.signals).await),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(format!(
-                        " INSPECTOR\n{}",
-                        apply_padding(self.inspect.lock().await.get_formatted()).join("\n")
-                    )),
+                    Box::new(advanced_draw(&self.scroll, 4, "INSPECTOR", &self.inspect).await),
                 ),
                 (
                     LayoutItem::Widget(Size::Flex(1)),
-                    Box::new(format!(
-                        " STATUS\n{}",
-                        apply_padding(self.status.lock().await.get_formatted()).join("\n")
-                    )),
+                    Box::new(advanced_draw(&self.scroll, 5, "STATUS", &self.status).await),
                 ),
             ]),
         );
 
         layout.draw(
             5,
-            format!(
-                " EVENT LOGS\n{}",
-                apply_padding(self.logs.lock().await.get_formatted()).join("\n")
-            ),
+            advanced_draw(&self.scroll, 6, "EVENT LOGS", &self.logs).await,
         );
 
         layout.draw(6, Input(" > ", &*self.command.lock().await));
@@ -283,6 +277,7 @@ async fn main() -> tokio::io::Result<()> {
     pulse_ui::run(|ctx| {
         client.use_app(PulseTradeApp {
             command: ctx.use_state(InputState::new()),
+            scroll: ctx.use_state(ScrollState(0, [0; 7])),
             watch_list: ctx.use_state(Vec::new()),
             active_positions: ctx.use_state(Vec::new()),
             signals: ctx.use_state(Vec::new()),
@@ -305,4 +300,19 @@ async fn main() -> tokio::io::Result<()> {
     .await;
 
     Ok(())
+}
+
+pub async fn advanced_draw<const N: usize, T: Formatted>(
+    scroll: &State<ScrollState<N>>,
+    index: usize,
+    title: &'static str,
+    state: &State<T>,
+) -> ScrollText {
+    let scroll = scroll.lock().await;
+
+    scroll.scroll(
+        index,
+        format!("{}{title}\x1b[0m", scroll.get_selected(index)),
+        apply_padding(state.lock().await.get_formatted()).join("\n"),
+    )
 }
