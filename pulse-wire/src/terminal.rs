@@ -2,6 +2,40 @@ use crate::PulseWire;
 use pulse_macros::pwp;
 
 #[pwp]
+pub enum TerminalServerMessage {
+    // WatchList
+    SetWatchList(Vec<WatchListItem>),
+
+    // Positions
+    SetPositions(Vec<ActivePosition>),
+    AddPosition(ActivePosition),
+    RemovePosition(usize),
+
+    // Overview
+    SetOverview(MarketOverview),
+
+    // Signals
+    SetSignals(Vec<Signal>),
+    AddSignal(Signal),
+    RemoveSignal(usize),
+
+    // Inspector
+    Inspect(InspectTarget),
+
+    // Status
+    SetStatus(Status),
+
+    // Logs
+    SetLogs(Vec<EventLog>),
+    AddLog(EventLog),
+}
+
+#[pwp]
+pub enum TerminalClientMessage {
+    ExecuteCommand(String),
+}
+
+#[pwp]
 pub struct WatchListItem {
     symbol: String,
     price: f64,
