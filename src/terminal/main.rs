@@ -226,14 +226,13 @@ impl App for PulseTradeApp {
                             .await,
                     ),
                 ),
-                (LayoutItem::Widget(Size::Flex(1)), {
-                    let mo = self.market_overview.lock().await;
-                    Box::new(format!(
-                        " MARKET OVERVIEW\n{}\n\n{}",
-                        apply_padding(mo.get_formatted()).join("\n"),
-                        apply_padding(mo.alerts.get_formatted()).join("\n")
-                    ))
-                }),
+                (
+                    LayoutItem::Widget(Size::Flex(1)),
+                    Box::new(
+                        advanced_draw(&self.scroll, 2, "MARKET OVERVIEW", &self.market_overview)
+                            .await,
+                    ),
+                ),
             ]),
         );
 
@@ -312,7 +311,7 @@ pub async fn advanced_draw<const N: usize, T: Formatted>(
 
     scroll.scroll(
         index,
-        format!("{}{title}\x1b[0m", scroll.get_selected(index)),
+        format!(" {}{title}\x1b[0m", scroll.get_selected(index)),
         apply_padding(state.lock().await.get_formatted()).join("\n"),
     )
 }
