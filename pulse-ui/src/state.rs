@@ -83,7 +83,15 @@ impl<'a, T> Drop for StateGuard<'a, T> {
 }
 
 impl Context {
+    pub async fn event<E: Any + Send + Sync>(&self, event: E) {
+        self.tx.send(Box::new(event)).await.unwrap()
+    }
+
     pub async fn close(&self) {
-        self.tx.send(Box::new(Close)).await.unwrap()
+        self.event(Close).await
+    }
+
+    pub async fn refresh(&self) {
+        self.event(Refresh).await
     }
 }

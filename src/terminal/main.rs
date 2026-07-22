@@ -43,9 +43,7 @@ impl App for PulseTradeApp {
     async fn update(&mut self, ctx: &pulse_ui::state::Context, event: Box<dyn Any + Send + Sync>) {
         if let Some(Refresh) = event.downcast_ref() {
             return;
-        }
-
-        if let Some(event) = event.downcast_ref() {
+        } else if let Some(event) = event.downcast_ref() {
             if self.command.value.lock().await.handle_event(event) {
                 return;
             } else if let crossterm::event::Event::Key(key) = event {

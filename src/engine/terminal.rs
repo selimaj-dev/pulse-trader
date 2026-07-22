@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use pulse_wire::PulseWire;
+use pulse_wire::{PulseWire, terminal::TerminalClientMessage};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{
@@ -40,37 +40,52 @@ impl TerminalServer {
 
             self.clients.lock().await.push(writer);
 
+            let s = self.clone();
+
             tokio::spawn(async move {
-                if let Err(err) = Self::handle_client(reader).await {
+                if let Err(err) = s.handle_client(reader).await {
                     eprintln!("Terminal connection error: {err}");
                 }
             });
         }
     }
 
-    async fn handle_client(mut reader: OwnedReadHalf) -> tokio::io::Result<()> {
-        let input = tokio::spawn(async move {
-            loop {
-                let mut len_buf = [0u8; size_of::<usize>()];
-                let size = reader.read_exact(&mut len_buf).await?;
+    async fn handle_client(&self, mut reader: OwnedReadHalf) -> tokio::io::Result<()> {
+        loop {
+            let mut len_buf = [0u8; size_of::<usize>()];
+            let size = reader.read_exact(&mut len_buf).await?;
 
-                let len = usize::from_le_bytes(len_buf);
+            let len = usize::from_le_bytes(len_buf);
 
-                if size == 0 || len == 0 {
-                    break;
-                }
-
-                let mut buffer = vec![0u8; len];
-
-                reader.read_exact(&mut buffer).await?;
-
-                println!("Received {} bytes", len);
+            if size == 0 || len == 0 {
+                break;
             }
 
-            Ok::<(), tokio::io::Error>(())
-        });
+            let mut buffer = vec![0u8; len];
 
-        let _ = tokio::try_join!(input)?;
+            reader.read_exact(&mut buffer).await?;
+
+            match TerminalClientMessage::from_com(&mut buffer) {
+                TerminalClientMessage::ExecuteCommand(command) => {
+                    let command = command.as_str();
+
+                    let (command, _args) = if let Some((command, args)) = command.split_once(" ") {
+                        (command, args.split(" ").collect())
+                    } else {
+                        (command, Vec::new())
+                    };
+
+                    self.broadcast(pulse_wire::terminal::TerminalServerMessage::AddLog(
+                        pulse_wire::terminal::EventLog {
+                            kind: pulse_wire::terminal::LogKind::Err,
+                            name: "Command executor".to_string(),
+                            message: format!("Command '{}' not found", command),
+                        },
+                    ))
+                    .await?;
+                }
+            }
+        }
 
         Ok(())
     }
