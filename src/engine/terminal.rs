@@ -76,9 +76,11 @@ impl TerminalServer {
     ) -> tokio::io::Result<()> {
         let msg = message.to_com();
 
-        for i in (0..self.clients.lock().await.len()).rev() {
-            if let Err(e) = self.clients.lock().await[i].write(&msg).await {
-                self.clients.lock().await.remove(i);
+        let mut clients = self.clients.lock().await;
+
+        for i in (0..clients.len()).rev() {
+            if let Err(e) = clients[i].write(&msg).await {
+                clients.remove(i);
                 println!("{e:?}");
             }
         }

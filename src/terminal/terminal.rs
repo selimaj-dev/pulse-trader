@@ -50,7 +50,7 @@ impl TerminalClient {
 
         tokio::spawn(async move {
             loop {
-                let mut buffer = Vec::new();
+                let mut buffer = vec![0u8; 4096];
 
                 let len = reader
                     .read(&mut buffer)
