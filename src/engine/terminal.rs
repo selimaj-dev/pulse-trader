@@ -1,5 +1,6 @@
+use pulse_wire::PulseWire;
 use tokio::{
-    io::AsyncReadExt,
+    io::{AsyncReadExt, AsyncWriteExt},
     net::{
         UnixListener,
         unix::{OwnedReadHalf, OwnedWriteHalf},
@@ -65,8 +66,19 @@ impl TerminalServer {
         Ok(())
     }
 
-    pub async fn broadcast(&mut self) -> tokio::io::Result<()> {
-        // for client in &mut self.clients {}
-        Ok(())
+    pub async fn broadcast(
+        &mut self,
+        message: pulse_wire::terminal::TerminalServerMessage,
+    ) -> tokio::io::Result<()> {
+        let mut res = Ok(());
+        let msg = message.to_com();
+
+        for client in &mut self.clients {
+            if let Err(e) = client.write(&msg).await {
+                res = Err(e);
+            }
+        }
+
+        res
     }
 }
