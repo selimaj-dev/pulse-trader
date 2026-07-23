@@ -102,7 +102,7 @@ impl Formatted for WatchListItem {
     fn get_formatted(&self) -> Vec<String> {
         vec![
             format!("\x1b[35m{}\x1b[0m", self.symbol),
-            format_f64(self.price),
+            format!("${}", format_f64(self.price)),
             format!("${}", format_f64(self.volume_24h)),
             format!(
                 "{} {}",

@@ -61,8 +61,6 @@ impl Engine {
         loop {
             tokio::time::sleep(tokio::time::Duration::from_millis(5000)).await;
         }
-
-        Ok(())
     }
 }
 
