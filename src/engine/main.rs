@@ -1,4 +1,5 @@
 pub mod engine;
+pub mod fetch;
 pub mod terminal;
 
 #[tokio::main]
