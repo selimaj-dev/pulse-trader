@@ -1,34 +1,65 @@
-use pulse_macros::p_com;
+use crate::PulseWire;
+use pulse_macros::pwp;
 
-#[p_com]
+#[pwp]
+pub enum TerminalServerMessage {
+    // WatchList
+    WatchListUpdated(Vec<WatchListItem>),
+
+    // Positions
+    PositionsUpdated(Vec<ActivePosition>),
+
+    // Overview
+    OverviewUpdated(MarketOverview),
+
+    // Signals
+    SignalsUpdated(Vec<Signal>),
+
+    // Inspector
+    Inspect(InspectTarget),
+
+    // Status
+    SetStatus(Status),
+
+    // Logs
+    SetLogs(Vec<EventLog>),
+    AddLog(EventLog),
+}
+
+#[pwp]
+pub enum TerminalClientMessage {
+    ExecuteCommand(String),
+}
+
+#[pwp]
 pub struct WatchListItem {
     symbol: String,
     price: f64,
     trend: f64,
 }
 
-#[p_com]
+#[pwp]
 pub struct ActivePosition {
     symbol: String,
     profit: f64,
     amount: f64,
 }
 
-#[p_com]
+#[pwp]
 pub enum MarketTrend {
     Bullish,
     Bearish,
     Neutral,
 }
 
-#[p_com]
+#[pwp]
 pub enum Volatility {
     Low,
     Medium,
     High,
 }
 
-#[p_com]
+#[pwp]
 pub struct MarketOverview {
     trend: MarketTrend,
     volatility: Volatility,
@@ -37,7 +68,7 @@ pub struct MarketOverview {
     alerts: Vec<Alert>,
 }
 
-#[p_com]
+#[pwp]
 pub enum Feed {
     Connected,
     Disconnected,
@@ -45,7 +76,7 @@ pub enum Feed {
     Failed,
 }
 
-#[p_com]
+#[pwp]
 pub struct Status {
     feed: Feed,
     exchange: String,
@@ -53,13 +84,13 @@ pub struct Status {
     latency: u16,
 }
 
-#[p_com]
+#[pwp]
 pub enum SignalKind {
     Buy,
     Sell,
 }
 
-#[p_com]
+#[pwp]
 pub enum SignalParameter {
     Lim,
     Stl,
@@ -67,7 +98,7 @@ pub enum SignalParameter {
     Chk,
 }
 
-#[p_com]
+#[pwp]
 pub struct Signal {
     kind: SignalKind,
     symbol: String,
@@ -75,7 +106,7 @@ pub struct Signal {
     price: f64,
 }
 
-#[p_com]
+#[pwp]
 pub enum LogKind {
     Info,
     Warn,
@@ -83,27 +114,27 @@ pub enum LogKind {
     Debug,
 }
 
-#[p_com]
+#[pwp]
 pub struct EventLog {
     kind: LogKind,
     name: String,
     message: String,
 }
 
-#[p_com]
+#[pwp]
 pub enum AlertLevel {
     High,
     Medium,
     Low,
 }
 
-#[p_com]
+#[pwp]
 pub struct Alert {
     level: AlertLevel,
     message: String,
 }
 
-#[p_com]
+#[pwp]
 pub enum InspectTarget {
     None,
     Symbol(WatchListItem),

@@ -3,7 +3,7 @@ use quote::quote;
 use syn::{Fields, ItemEnum, ItemStruct, parse_macro_input};
 
 #[proc_macro_attribute]
-pub fn p_com(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn pwp(_: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as syn::Item);
 
     match input {
@@ -49,7 +49,7 @@ fn expand_struct(mut input: ItemStruct) -> TokenStream {
         #[derive(Debug, Clone)]
         #input
 
-        impl PulseCom for #name {
+        impl PulseWire for #name {
             fn to_com(&self) -> Vec<u8> {
                 let mut vec = Vec::new();
 
@@ -63,7 +63,7 @@ fn expand_struct(mut input: ItemStruct) -> TokenStream {
             fn from_com(com: &mut Vec<u8>) -> Self {
                 Self {
                     #(
-                        #field_names2: PulseCom::from_com(com),
+                        #field_names2: PulseWire::from_com(com),
                     )*
                 }
             }
@@ -122,7 +122,7 @@ fn expand_enum(input: ItemEnum) -> TokenStream {
 
             Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
                 quote! {
-                    #tag => Self::#ident(PulseCom::from_com(com)),
+                    #tag => Self::#ident(PulseWire::from_com(com)),
                 }
             }
 
@@ -132,7 +132,7 @@ fn expand_enum(input: ItemEnum) -> TokenStream {
                 quote! {
                     #tag => Self::#ident {
                         #(
-                            #names: PulseCom::from_com(com),
+                            #names: PulseWire::from_com(com),
                         )*
                     },
                 }
@@ -146,7 +146,7 @@ fn expand_enum(input: ItemEnum) -> TokenStream {
         #[derive(Debug, Clone)]
         #input
 
-        impl PulseCom for #name {
+        impl PulseWire for #name {
             fn to_com(&self) -> Vec<u8> {
                 let mut vec = Vec::new();
 

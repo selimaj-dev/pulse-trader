@@ -1,8 +1,9 @@
 pub mod align;
-pub mod outline;
-pub mod spaced;
 pub mod dynamic;
 pub mod input;
+pub mod outline;
+pub mod scroll;
+pub mod spaced;
 
 use crate::render::RenderScope;
 

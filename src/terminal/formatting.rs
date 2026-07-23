@@ -1,4 +1,4 @@
-use crate::ptc::{
+use pulse_wire::terminal::{
     ActivePosition, Alert, AlertLevel, EventLog, InspectTarget, LogKind, MarketOverview, Signal,
     SignalKind, Status, WatchListItem,
 };
@@ -137,7 +137,7 @@ struct Property(&'static str, String);
 
 impl Formatted for MarketOverview {
     fn get_formatted(&self) -> Vec<String> {
-        vec![
+        let mut o = vec![
             Property("TREND", format!("{}", self.trend)),
             Property("VOLATILITY", format!("{}", self.volatility)),
             Property(
@@ -149,7 +149,14 @@ impl Formatted for MarketOverview {
                 },
             ),
         ]
-        .get_formatted()
+        .get_formatted();
+
+        o.push(format!(
+            "\n{}",
+            apply_padding(self.alerts.get_formatted()).join("\n")
+        ));
+
+        o
     }
 }
 
