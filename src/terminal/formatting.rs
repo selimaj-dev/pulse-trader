@@ -1,6 +1,6 @@
 use pulse_wire::terminal::{
-    ActivePosition, Alert, AlertLevel, EventLog, InspectTarget, LogKind, MarketOverview, Signal,
-    SignalKind, Status, WatchListItem,
+    ActivePosition, Alert, AlertLevel, EventLog, InspectItem, InspectTarget, LogKind,
+    MarketOverview, Signal, SignalKind, Status, WatchListItem,
 };
 
 pub trait Formatted {
@@ -12,37 +12,15 @@ impl Formatted for InspectTarget {
         match self {
             Self::None => vec!["\x1b[2mnothing to inspect\x1b[0m".to_string()],
 
-            Self::Symbol(watch) => vec![
-                Property("Symbol", format!("\x1b[35m{}\x1b[0m", watch.symbol)),
-                Property(
-                    "Price",
-                    format!("\x1b[96m{}\x1b[0m", format_f64(watch.price)),
-                ),
-                Property("Trend", format!("{}", format_f64(watch.trend))),
-                Property("24h volume", format!("${}", format_f64(watch.volume_24h))),
-            ]
-            .get_formatted(),
-
-            Self::Position(pos) => vec![
-                Property("Symbol", format!("\x1b[35m{}\x1b[0m", pos.symbol)),
-                Property("Profit", format!("{:+.2}", pos.profit)),
-                Property("Amount", format!("{}", pos.amount)),
-            ]
-            .get_formatted(),
-
-            Self::Signal(sig) => vec![
-                Property("Type", format!("{}", sig.kind)),
-                Property("Symbol", format!("\x1b[35m{}\x1b[0m", sig.symbol)),
-                Property("Parameter", format!("{}", sig.param)),
-                Property("Price", format!("\x1b[96m{}\x1b[0m", format_f64(sig.price))),
-            ]
-            .get_formatted(),
-
-            Self::Alert(alert) => vec![
-                Property("Level", format!("{}", alert.level)),
-                Property("Message", alert.message.clone()),
-            ]
-            .get_formatted(),
+            Self::Some(items) => items
+                .iter()
+                .map(|item| match item {
+                    InspectItem::F64(v) => format_f64(*v),
+                    InspectItem::USD(v) => format!("${}", format_f64(*v)),
+                    InspectItem::Symbol(v) => format!("\x1b[35m{v}\x1b[0m"),
+                    InspectItem::String(v) => v.clone(),
+                })
+                .collect(),
         }
     }
 }
@@ -121,7 +99,9 @@ impl Formatted for ActivePosition {
     fn get_formatted(&self) -> Vec<String> {
         vec![
             format!("\x1b[35m{}\x1b[0m", self.symbol),
-            format_f64(self.amount),
+            format_f64(self.size),
+            format_f64(self.entry_price),
+            format_f64(self.mark_price),
             format!(
                 "{} {}",
                 if self.profit.is_sign_positive() {
