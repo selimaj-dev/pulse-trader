@@ -19,6 +19,7 @@ impl Formatted for InspectTarget {
                     format!("\x1b[96m{}\x1b[0m", format_f64(watch.price)),
                 ),
                 Property("Trend", format!("{}", format_f64(watch.trend))),
+                Property("24h volume", format!("${}", format_f64(watch.volume_24h))),
             ]
             .get_formatted(),
 
@@ -102,6 +103,7 @@ impl Formatted for WatchListItem {
         vec![
             format!("\x1b[35m{}\x1b[0m", self.symbol),
             format_f64(self.price),
+            format!("${}", format_f64(self.volume_24h)),
             format!(
                 "{} {}",
                 if self.trend.is_sign_positive() {
@@ -227,7 +229,31 @@ pub fn apply_padding(mut items: Vec<String>) -> Vec<String> {
 }
 
 pub fn format_f64(value: f64) -> String {
-    let val = value.to_string();
+    let abs = value.abs();
+
+    let (divisor, suffix) = if abs >= 1_000_000_000.0 {
+        (1_000_000_000.0, "B")
+    } else if abs >= 1_000_000.0 {
+        (1_000_000.0, "M")
+    } else if abs >= 1_000.0 {
+        (1_000.0, "K")
+    } else {
+        (1.0, "")
+    };
+
+    if divisor != 1.0 {
+        let formatted = value / divisor;
+
+        // Remove unnecessary trailing zeros
+        let s = format!("{:.2}", formatted)
+            .trim_end_matches('0')
+            .trim_end_matches('.')
+            .to_string();
+
+        return format!("{}{}", s, suffix);
+    }
+
+    let val = format!("{:.3}", value);
     let parts: Vec<&str> = val.split('.').collect();
 
     let int = parts[0].to_string();

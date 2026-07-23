@@ -36,6 +36,7 @@ pub struct WatchListItem {
     symbol: String,
     price: f64,
     trend: f64,
+    volume_24h: f64,
 }
 
 #[pwp]
