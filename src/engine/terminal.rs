@@ -75,14 +75,18 @@ impl TerminalServer {
                         (command, Vec::new())
                     };
 
-                    self.broadcast(pulse_wire::terminal::TerminalServerMessage::AddLog(
-                        pulse_wire::terminal::EventLog {
-                            kind: pulse_wire::terminal::LogKind::Err,
-                            name: "Command executor".to_string(),
-                            message: format!("Command '{}' not found", command),
-                        },
-                    ))
-                    .await?;
+                    match command {
+                        _ => {
+                            self.broadcast(pulse_wire::terminal::TerminalServerMessage::AddLog(
+                                pulse_wire::terminal::EventLog {
+                                    kind: pulse_wire::terminal::LogKind::Err,
+                                    name: "Command executor".to_string(),
+                                    message: format!("Command '{}' not found", command),
+                                },
+                            ))
+                            .await?;
+                        }
+                    }
                 }
             }
         }

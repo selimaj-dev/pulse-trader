@@ -36,13 +36,16 @@ pub struct WatchListItem {
     symbol: String,
     price: f64,
     trend: f64,
+    volume_24h: f64,
 }
 
 #[pwp]
 pub struct ActivePosition {
-    symbol: String,
-    profit: f64,
-    amount: f64,
+    pub symbol: String,
+    pub size: f64,
+    pub entry_price: f64,
+    pub mark_price: f64,
+    pub profit: f64,
 }
 
 #[pwp]
@@ -137,10 +140,15 @@ pub struct Alert {
 #[pwp]
 pub enum InspectTarget {
     None,
-    Symbol(WatchListItem),
-    Position(ActivePosition),
-    Signal(Signal),
-    Alert(Alert),
+    Some(Vec<InspectItem>),
+}
+
+#[pwp]
+pub enum InspectItem {
+    String(String),
+    Symbol(String),
+    USD(f64),
+    F64(f64),
 }
 
 impl std::fmt::Display for MarketTrend {

@@ -1,6 +1,6 @@
 use pulse_wire::terminal::{
-    ActivePosition, Alert, AlertLevel, EventLog, InspectTarget, LogKind, MarketOverview, Signal,
-    SignalKind, Status, WatchListItem,
+    ActivePosition, Alert, AlertLevel, EventLog, InspectItem, InspectTarget, LogKind,
+    MarketOverview, Signal, SignalKind, Status, WatchListItem,
 };
 
 pub trait Formatted {
@@ -12,36 +12,15 @@ impl Formatted for InspectTarget {
         match self {
             Self::None => vec!["\x1b[2mnothing to inspect\x1b[0m".to_string()],
 
-            Self::Symbol(watch) => vec![
-                Property("Symbol", format!("\x1b[35m{}\x1b[0m", watch.symbol)),
-                Property(
-                    "Price",
-                    format!("\x1b[96m{}\x1b[0m", format_f64(watch.price)),
-                ),
-                Property("Trend", format!("{}", format_f64(watch.trend))),
-            ]
-            .get_formatted(),
-
-            Self::Position(pos) => vec![
-                Property("Symbol", format!("\x1b[35m{}\x1b[0m", pos.symbol)),
-                Property("Profit", format!("{:+.2}", pos.profit)),
-                Property("Amount", format!("{}", pos.amount)),
-            ]
-            .get_formatted(),
-
-            Self::Signal(sig) => vec![
-                Property("Type", format!("{}", sig.kind)),
-                Property("Symbol", format!("\x1b[35m{}\x1b[0m", sig.symbol)),
-                Property("Parameter", format!("{}", sig.param)),
-                Property("Price", format!("\x1b[96m{}\x1b[0m", format_f64(sig.price))),
-            ]
-            .get_formatted(),
-
-            Self::Alert(alert) => vec![
-                Property("Level", format!("{}", alert.level)),
-                Property("Message", alert.message.clone()),
-            ]
-            .get_formatted(),
+            Self::Some(items) => items
+                .iter()
+                .map(|item| match item {
+                    InspectItem::F64(v) => format_f64(*v),
+                    InspectItem::USD(v) => format!("${}", format_f64(*v)),
+                    InspectItem::Symbol(v) => format!("\x1b[35m{v}\x1b[0m"),
+                    InspectItem::String(v) => v.clone(),
+                })
+                .collect(),
         }
     }
 }
@@ -101,7 +80,8 @@ impl Formatted for WatchListItem {
     fn get_formatted(&self) -> Vec<String> {
         vec![
             format!("\x1b[35m{}\x1b[0m", self.symbol),
-            format_f64(self.price),
+            format!("${}", format_f64(self.price)),
+            format!("${}", format_f64(self.volume_24h)),
             format!(
                 "{} {}",
                 if self.trend.is_sign_positive() {
@@ -119,7 +99,9 @@ impl Formatted for ActivePosition {
     fn get_formatted(&self) -> Vec<String> {
         vec![
             format!("\x1b[35m{}\x1b[0m", self.symbol),
-            format_f64(self.amount),
+            format_f64(self.size),
+            format_f64(self.entry_price),
+            format_f64(self.mark_price),
             format!(
                 "{} {}",
                 if self.profit.is_sign_positive() {
@@ -227,7 +209,31 @@ pub fn apply_padding(mut items: Vec<String>) -> Vec<String> {
 }
 
 pub fn format_f64(value: f64) -> String {
-    let val = value.to_string();
+    let abs = value.abs();
+
+    let (divisor, suffix) = if abs >= 1_000_000_000.0 {
+        (1_000_000_000.0, "B")
+    } else if abs >= 1_000_000.0 {
+        (1_000_000.0, "M")
+    } else if abs >= 1_000.0 {
+        (1_000.0, "K")
+    } else {
+        (1.0, "")
+    };
+
+    if divisor != 1.0 {
+        let formatted = value / divisor;
+
+        // Remove unnecessary trailing zeros
+        let s = format!("{:.2}", formatted)
+            .trim_end_matches('0')
+            .trim_end_matches('.')
+            .to_string();
+
+        return format!("{}{}", s, suffix);
+    }
+
+    let val = format!("{:.3}", value);
     let parts: Vec<&str> = val.split('.').collect();
 
     let int = parts[0].to_string();
