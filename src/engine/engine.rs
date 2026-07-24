@@ -4,6 +4,7 @@ use tokio::sync::Mutex;
 
 use crate::{config::Config, terminal::TerminalServer};
 
+#[derive(Debug, Clone)]
 pub struct Engine {
     pub terminal_server: Arc<TerminalServer>,
     pub config: Arc<Mutex<Config>>,
@@ -17,46 +18,47 @@ impl Engine {
         })
     }
 
-    pub fn spawn_terminal_server(&self) {
+    pub async fn spawn_terminal_server(&self) -> tokio::io::Result<()> {
         let terminal_server = self.terminal_server.clone();
 
-        tokio::spawn(async move {
-            terminal_server
-                .run()
-                .await
-                .expect("Failed to run terminal server");
-        });
+        tokio::spawn(async move { terminal_server.run().await })
+            .await
+            .expect("Failed to spawn terminal server")
     }
 
-    pub fn spawn_broadcaster(&self) {
-        let terminal_server = self.terminal_server.clone();
-        let config = self.config.clone();
+    pub async fn spawn_broadcaster(&self) -> tokio::io::Result<()> {
+        let s = self.clone();
 
-        tokio::spawn(async move {
-            let mut refresh = tokio::time::interval(tokio::time::Duration::from_secs(5));
+        tokio::spawn(async move { s.run_broadcaster().await })
+            .await
+            .expect("Failed to spawn broadcaster")
+    }
 
-            loop {
-                refresh.tick().await;
+    pub async fn run_broadcaster(&self) -> tokio::io::Result<()> {
+        let mut refresh = tokio::time::interval(tokio::time::Duration::from_secs(5));
 
-                let watch_list = &config.lock().await.watchlist.symbols;
+        loop {
+            refresh.tick().await;
 
-                match crate::fetch::fetch_watch_list(watch_list).await {
-                    Ok(watch_list) => {
-                        if let Err(error) = terminal_server
-                            .broadcast(
-                                pulse_wire::terminal::TerminalServerMessage::WatchListUpdated(
-                                    watch_list,
-                                ),
-                            )
-                            .await
-                        {
-                            eprintln!("Failed to broadcast Hyperliquid watch list: {error}");
-                        }
+            let watch_list = &self.config.lock().await.watchlist.symbols;
+
+            match crate::fetch::fetch_watch_list(watch_list).await {
+                Ok(watch_list) => {
+                    if let Err(error) = self
+                        .terminal_server
+                        .broadcast(
+                            pulse_wire::terminal::TerminalServerMessage::WatchListUpdated(
+                                watch_list,
+                            ),
+                        )
+                        .await
+                    {
+                        eprintln!("Failed to broadcast Hyperliquid watch list: {error}");
                     }
-                    Err(error) => eprintln!("Failed to refresh Hyperliquid watch list: {error}"),
                 }
+                Err(error) => eprintln!("Failed to refresh Hyperliquid watch list: {error}"),
             }
-        });
+        }
     }
 
     pub async fn run_engine(&self) -> tokio::io::Result<()> {
