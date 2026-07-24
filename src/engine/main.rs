@@ -1,16 +1,22 @@
+pub mod config;
 pub mod engine;
 pub mod fetch;
 pub mod terminal;
 
 #[tokio::main]
 async fn main() -> tokio::io::Result<()> {
-    let mut engine = engine::Engine::new();
+    let engine = engine::Engine::new().await?;
 
-    engine.spawn_terminal_server();
+    let terminal_server = engine.spawn_terminal_server().await;
 
-    engine.spawn_broadcaster();
+    let broadcaster = engine.spawn_broadcaster().await;
 
     engine.run_engine().await?;
+
+    let (terminal_server, broadcaster) = tokio::join!(terminal_server, broadcaster);
+
+    terminal_server??;
+    broadcaster??;
 
     Ok(())
 }
