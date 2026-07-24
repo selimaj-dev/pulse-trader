@@ -1,9 +1,11 @@
+use std::sync::Arc;
+
 use crate::terminal::TerminalServer;
 
 const WATCH_LIST_SYMBOLS: &[&str] = &["BTC", "ETH", "SOL", "XRP"];
 
 pub struct Engine {
-    pub terminal_server: TerminalServer,
+    pub terminal_server: Arc<TerminalServer>,
 }
 
 impl Engine {

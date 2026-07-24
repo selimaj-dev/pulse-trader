@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use pulse_wire::{PulseWire, terminal::TerminalClientMessage};
+use pulse_wire::{
+    PulseWire,
+    terminal::{EventLog, LogKind, TerminalClientMessage},
+};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{
@@ -10,19 +13,21 @@ use tokio::{
     sync::Mutex,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct TerminalServer {
-    clients: Arc<Mutex<Vec<OwnedWriteHalf>>>,
+    clients: Mutex<Vec<OwnedWriteHalf>>,
+    logs: Mutex<Vec<EventLog>>,
 }
 
 impl TerminalServer {
-    pub fn new() -> Self {
-        Self {
-            clients: Arc::new(Mutex::new(Vec::new())),
-        }
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {
+            clients: Mutex::new(Vec::new()),
+            logs: Mutex::new(Vec::new()),
+        })
     }
 
-    pub async fn run(&self) -> tokio::io::Result<()> {
+    pub async fn run(self: &Arc<Self>) -> tokio::io::Result<()> {
         let path = pulse_wire::server_path();
 
         if path.exists() {
@@ -50,7 +55,7 @@ impl TerminalServer {
         }
     }
 
-    async fn handle_client(&self, mut reader: OwnedReadHalf) -> tokio::io::Result<()> {
+    async fn handle_client(self: &Arc<Self>, mut reader: OwnedReadHalf) -> tokio::io::Result<()> {
         loop {
             let mut len_buf = [0u8; size_of::<usize>()];
             let size = reader.read_exact(&mut len_buf).await?;
@@ -95,7 +100,7 @@ impl TerminalServer {
     }
 
     pub async fn broadcast(
-        &self,
+        self: &Arc<Self>,
         message: pulse_wire::terminal::TerminalServerMessage,
     ) -> tokio::io::Result<()> {
         let msg = message.to_com();
@@ -122,5 +127,29 @@ impl TerminalServer {
         clients[i].flush().await?;
 
         Ok(())
+    }
+
+    pub async fn log(self: &Arc<Self>, kind: LogKind, name: &str, message: &str) {
+        self.logs.lock().await.push(EventLog {
+            kind,
+            name: name.to_string(),
+            message: message.to_string(),
+        });
+    }
+
+    pub async fn info(self: &Arc<Self>, name: &str, message: &str) {
+        self.log(LogKind::Info, name, message).await
+    }
+
+    pub async fn warn(self: &Arc<Self>, name: &str, message: &str) {
+        self.log(LogKind::Warn, name, message).await
+    }
+
+    pub async fn error(self: &Arc<Self>, name: &str, message: &str) {
+        self.log(LogKind::Err, name, message).await
+    }
+
+    pub async fn debug(self: &Arc<Self>, name: &str, message: &str) {
+        self.log(LogKind::Debug, name, message).await
     }
 }
