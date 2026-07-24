@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use tokio::sync::Mutex;
+use tokio::{sync::Mutex, task::JoinHandle};
 
 use crate::{config::Config, terminal::TerminalServer};
 
@@ -20,20 +20,16 @@ impl Engine {
         }))
     }
 
-    pub async fn spawn_terminal_server(&self) -> tokio::io::Result<()> {
+    pub async fn spawn_terminal_server(&self) -> JoinHandle<tokio::io::Result<()>> {
         let terminal_server = self.terminal_server.clone();
 
         tokio::spawn(async move { terminal_server.run().await })
-            .await
-            .expect("Failed to spawn terminal server")
     }
 
-    pub async fn spawn_broadcaster(&self) -> tokio::io::Result<()> {
+    pub async fn spawn_broadcaster(&self) -> JoinHandle<tokio::io::Result<()>> {
         let s = self.clone();
 
         tokio::spawn(async move { s.run_broadcaster().await })
-            .await
-            .expect("Failed to spawn broadcaster")
     }
 
     pub async fn run_broadcaster(&self) -> tokio::io::Result<()> {
