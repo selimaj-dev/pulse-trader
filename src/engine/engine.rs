@@ -65,8 +65,28 @@ impl Engine {
         }
     }
 
-    pub async fn execute_command(&self, command: &str, _args: Vec<&str>) -> tokio::io::Result<()> {
+    pub async fn execute_command(&self, command: &str, args: Vec<&str>) -> tokio::io::Result<()> {
         match command {
+            "config" => {
+                const MESSAGE: &str = "Invalid command arguments, usage: config <reload>";
+
+                if args.len() != 1 {
+                    self.terminal_server.error("config", MESSAGE).await?;
+
+                    return Ok(());
+                }
+
+                match args[0] {
+                    "reload" => {
+                        *self.config.lock().await = Config::new().await?;
+                    }
+
+                    _ => {
+                        self.terminal_server.error("config", MESSAGE).await?;
+                    }
+                }
+            }
+
             _ => {
                 self.terminal_server
                     .error(
