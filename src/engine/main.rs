@@ -5,7 +5,7 @@ pub mod terminal;
 
 #[tokio::main]
 async fn main() -> tokio::io::Result<()> {
-    let mut engine = engine::Engine::new();
+    let engine = engine::Engine::new().await?;
 
     engine.spawn_terminal_server();
 

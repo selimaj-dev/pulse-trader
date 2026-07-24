@@ -16,12 +16,12 @@ pub fn pulse_config_directory() -> tokio::io::Result<PathBuf> {
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct WatchList {
-    symbols: Vec<String>,
+    pub symbols: Vec<String>,
 }
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Config {
-    watchlist: WatchList,
+    pub watchlist: WatchList,
 }
 
 impl Config {

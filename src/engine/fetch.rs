@@ -12,7 +12,7 @@ fn number(value: &Value, field: &str) -> Result<f64, String> {
         .map_err(|error| format!("could not parse asset context field {field} ({raw}): {error}"))
 }
 
-pub async fn fetch_watch_list(symbols: &[&str]) -> Result<Vec<WatchListItem>, String> {
+pub async fn fetch_watch_list(symbols: &[String]) -> Result<Vec<WatchListItem>, String> {
     let response = hypersdk::hypercore::mainnet()
         .meta_and_asset_ctxs(None)
         .await
@@ -73,7 +73,7 @@ pub async fn fetch_watch_list(symbols: &[&str]) -> Result<Vec<WatchListItem>, St
         .iter()
         .map(|symbol| {
             by_symbol
-                .remove(*symbol)
+                .remove(symbol.as_str())
                 .ok_or_else(|| format!("{symbol} is not in the Hyperliquid perpetual universe"))
         })
         .collect()
