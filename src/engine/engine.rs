@@ -11,11 +11,13 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub async fn new() -> tokio::io::Result<Self> {
-        Ok(Self {
-            terminal_server: TerminalServer::new(),
-            config: Arc::new(Mutex::new(Config::new().await?)),
-        })
+    pub async fn new() -> tokio::io::Result<Arc<Self>> {
+        let config = Arc::new(Mutex::new(Config::new().await?));
+
+        Ok(Arc::new_cyclic(|engine| Self {
+            terminal_server: TerminalServer::new(engine.clone()),
+            config,
+        }))
     }
 
     pub async fn spawn_terminal_server(&self) -> tokio::io::Result<()> {
@@ -65,5 +67,20 @@ impl Engine {
         loop {
             tokio::time::sleep(tokio::time::Duration::from_millis(5000)).await;
         }
+    }
+
+    pub async fn execute_command(&self, command: &str, _args: Vec<&str>) -> tokio::io::Result<()> {
+        match command {
+            _ => {
+                self.terminal_server
+                    .error(
+                        "Command executor",
+                        &format!("Command '{}' not found", command),
+                    )
+                    .await?;
+            }
+        }
+
+        Ok(())
     }
 }

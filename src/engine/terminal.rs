@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Weak},
+};
 
 use pulse_wire::{
     PulseWire,
@@ -13,17 +16,21 @@ use tokio::{
     sync::Mutex,
 };
 
+use crate::engine::Engine;
+
 #[derive(Debug)]
 pub struct TerminalServer {
     clients: Mutex<HashMap<usize, OwnedWriteHalf>>,
     logs: Mutex<Vec<EventLog>>,
+    engine: Weak<Engine>,
 }
 
 impl TerminalServer {
-    pub fn new() -> Arc<Self> {
+    pub fn new(engine: Weak<Engine>) -> Arc<Self> {
         Arc::new(Self {
             clients: Mutex::new(HashMap::new()),
             logs: Mutex::new(Vec::new()),
+            engine,
         })
     }
 
@@ -86,21 +93,13 @@ impl TerminalServer {
                 TerminalClientMessage::ExecuteCommand(command) => {
                     let command = command.as_str();
 
-                    let (command, _args) = if let Some((command, args)) = command.split_once(" ") {
+                    let (command, args) = if let Some((command, args)) = command.split_once(" ") {
                         (command, args.split(" ").collect())
                     } else {
                         (command, Vec::new())
                     };
 
-                    match command {
-                        _ => {
-                            self.error(
-                                "Command executor",
-                                &format!("Command '{}' not found", command),
-                            )
-                            .await?;
-                        }
-                    }
+                    self.get_engine().execute_command(command, args).await?;
                 }
             }
         }
@@ -189,5 +188,11 @@ impl TerminalServer {
 
     pub async fn debug(self: &Arc<Self>, name: &str, message: &str) -> tokio::io::Result<()> {
         self.log(LogKind::Debug, name, message).await
+    }
+
+    pub fn get_engine(&self) -> Arc<Engine> {
+        self.engine
+            .upgrade()
+            .expect("Failed to upgrade engine(Weak) to Arc")
     }
 }
