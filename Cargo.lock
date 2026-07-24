@@ -3887,6 +3887,7 @@ dependencies = [
  "hypersdk",
  "pulse-ui",
  "pulse-wire",
+ "rand 0.8.7",
  "serde_json",
  "tokio",
 ]
